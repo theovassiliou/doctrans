@@ -1,0 +1,152 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "dtaservice.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/document/transform-pipe": {
+      "post": {
+        "operationId": "TransformPipe",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DTAServer"
+        ]
+      }
+    },
+    "/v1/dta/document/transform": {
+      "post": {
+        "summary": "Request to transform a plain text document",
+        "operationId": "TransformDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtaserviceDocumentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DTAServer"
+        ]
+      }
+    },
+    "/v1/dta/service/list": {
+      "get": {
+        "operationId": "ListServices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceListServicesResponse"
+            }
+          }
+        },
+        "tags": [
+          "DTAServer"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "dtaserviceDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string",
+          "format": "byte"
+        },
+        "service_name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "The request message containing the document to be transformed"
+    },
+    "dtaserviceListServicesResponse": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dtaserviceTransformDocumentReply": {
+      "type": "object",
+      "properties": {
+        "trans_document": {
+          "type": "string",
+          "format": "byte"
+        },
+        "trans_output": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "The response message containing the transformed message"
+    },
+    "dtaserviceTransformPipeRequest": {
+      "type": "object",
+      "properties": {
+        "pipe": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dtaserviceDocumentRequest"
+          }
+        }
+      }
+    }
+  }
+}

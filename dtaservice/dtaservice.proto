@@ -28,23 +28,40 @@ option java_outer_classname = "DTAProto";
 
 package dtaservice;
 
+import "google/api/annotations.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+
 // The DTA service definition.
 service DTAServer {
   // Request to transform a plain text document
-  rpc TransformDocument (DocumentRequest) returns (TransformDocumentReply) {}
-  rpc ListServices(ListServiceRequest) returns (ListServicesResponse) {}
-  rpc TransformPipe(TransformPipeRequest) returns (TransformDocumentReply) {}
+  rpc TransformDocument (DocumentRequest) returns (TransformDocumentReply) {
+       option (google.api.http) = {
+        post: "/v1/dta/document/transform"
+        body: "*"
+      };
+  }
+  rpc ListServices(ListServiceRequest) returns (ListServicesResponse) {
+    option (google.api.http) = {
+      get: "/v1/dta/service/list"
+    };
+  }
+  rpc TransformPipe(TransformPipeRequest) returns (TransformDocumentReply) {
+    option (google.api.http) = {
+      post: "/v1/document/transform-pipe"
+      body: "*"
+    };
+  }
 }
 
-// The request message containing the user's name.
+// The request message containing the document to be transformed
 message DocumentRequest {
   string file_name = 1;
   bytes document = 2;
-  string service_name = 3;
+  string service_name = 3 [(validator.field) = {string_not_empty : true}];
   repeated string options = 4;
 }
 
-// The response message containing the greetings
+// The response message containing the transformed message
 message TransformDocumentReply {
   bytes trans_document = 1;
   repeated string trans_output = 2;

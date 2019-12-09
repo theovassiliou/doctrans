@@ -41,7 +41,23 @@ type DocTransServer struct {
 	CfgFile  string    `opts:"group=Generic" help:"The config file to use"`
 	Init     bool      `opts:"group=Generic" help:"Create a default config file as defined by cfg-file, if set. If not set ~/.dta/{AppName}/config.json will be created."`
 
-	registrar *eureka.Client
+	registrar    *eureka.Client
+	instanceInfo *eureka.InstanceInfo
+	heartBeatJob *scheduler.Job
+}
+
+func (dtas *DocTransServer) InstanceInfo() *eureka.InstanceInfo {
+	return dtas.instanceInfo
+}
+func (dtas *DocTransServer) UnregisterAtRegistry() {
+	if dtas.instanceInfo != nil {
+		dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
+		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("Unregister service %s with id %s", dtas.instanceInfo.App, dtas.instanceInfo.InstanceID)
+	} else {
+		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("service %s allready unregistered", dtas.instanceInfo.App)
+	}
+	dtas.heartBeatJob.Quit <- true
+	dtas.instanceInfo = nil
 }
 
 // RegisterAtRegistry registers the DocTransServer at the Area Registry
@@ -54,26 +70,25 @@ func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, d
 	})
 
 	// Create the app instance
-	instanceInfo := eureka.NewInstanceInfo(hostname, app, ipAddress, port, ttl, isSsl) //Create a new instance to register
+	dtas.instanceInfo = eureka.NewInstanceInfo(hostname, app, ipAddress, port, ttl, isSsl) //Create a new instance to register
 	// Add some meta data. Currently no meaning
 	// TODO: Remove this playground if not further required
-	instanceInfo.Metadata = &eureka.MetaData{
+	dtas.instanceInfo.Metadata = &eureka.MetaData{
 		Map: make(map[string]string),
 	}
-	instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
+	dtas.instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
 	// Register instance and heartbeat for Eureka
-	dtas.registrar.RegisterInstance(app, instanceInfo) // Register new instance in your eureka(s)
+	dtas.registrar.RegisterInstance(app, dtas.instanceInfo) // Register new instance in your eureka(s)
 	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s", app)
 
 	job := func() {
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Trace("sending heartbeat : ", time.Now().UTC())
-		dtas.registrar.SendHeartbeat(instanceInfo.App, instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
+		dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
 	}
 
 	// Run every 25 seconds but not now.
 	// FIXME:0 We have somehow be able to deregister the heartbeat
-	_, _ = scheduler.Every(25).Seconds().NotImmediately().Run(job)
-
+	dtas.heartBeatJob, _ = scheduler.Every(25).Seconds().NotImmediately().Run(job)
 }
 
 func (dtas *DocTransServer) CreateListener(maxPortSeek int) net.Listener {

@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
@@ -87,6 +90,24 @@ func main() {
 
 	// We register ourselfs by using the dyn.port
 	dts.RegisterAtRegistry(dts.HostName, dts.AppName, pb.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
+
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		for sigs := range c {
+			switch sigs {
+			case syscall.SIGTERM: // CTRL-D
+				if dts.InstanceInfo() != nil {
+					dts.UnregisterAtRegistry()
+				} else {
+					dts.RegisterAtRegistry(dts.HostName, dts.AppName, pb.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
+				}
+			case syscall.SIGINT: // CTRL-C
+				dts.UnregisterAtRegistry()
+				os.Exit(1)
+			}
+		}
+	}()
 
 	pb.RegisterDTAServerServer(s, gateway)
 	// Start dta service by using the listener

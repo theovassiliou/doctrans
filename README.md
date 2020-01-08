@@ -44,7 +44,49 @@ Currently the project provides implementations for the following elements
 
 - [Echo](services/qds_echo/README.md)
   Just echoing the provided document
-  
+
+## Installation of Implementations
+
+Installation is pretty straight forward if you have a working golang environment.
+
+```shell
+go get github.com/theovassiliou/doctrans
+go build ./...
+go test ./...
+```
+
+If the output looks reasonable you are ready to go.
+
+## 1st run
+
+To test run a client/server pair try out the following
+
+```shell
+go run services/qds_echo/echo.go
+```
+
+and in another terminal on the same host
+
+```shell
+go run clients/client.go test/testDoc.txt
+```
+
+`client` sends the file `testDoc.txt` to the echo server which has been started before. Addressing is hardcoded via the default parameters.
+
+If you start in a third terminal on the same host an additional server with
+
+```shell
+go run services/qds_count/count.go
+```
+
+This would start the *count* server, listening on the next available port. In order to use this service you could use now
+
+```shell
+go run clients/client.go -g :50052 test/testDoc.txt
+```
+
+For detailed configurations consult the respective client and server READMEs
+
 ## Glossary
 
 - DTA  - Document Transformation Application

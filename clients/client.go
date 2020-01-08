@@ -69,7 +69,7 @@ const dtaGwID = "DE.TU-BERLIN.QDS.DTA.DTA-GW"
 func main() {
 
 	conf = config{
-		GatewayAddress: "",
+		GatewayAddress: "127.0.0.1:50051",
 		ServiceName:    "DE.TU-BERLIN.QDS.DTA.COUNT",
 		EurekaURL:      "http://eureka:8761/eureka",
 	}

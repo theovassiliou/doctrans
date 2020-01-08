@@ -51,7 +51,11 @@ func main() {
 		Version(VERSION).
 		Parse()
 
-	if dts.AppName != "" {
+	if dts.LogLevel != 0 {
+		log.SetLevel(dts.LogLevel)
+	}
+
+	if dts.AppName != "" && dts.CfgFile != "" {
 		dts.CfgFile = workingHomeDir + "/.dta/" + dts.AppName + "/config.json"
 	}
 
@@ -67,12 +71,15 @@ func main() {
 	// Parse config file
 	dts, err := pb.NewDocTransFromFile(dts.CfgFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Infoln("No config file found. Consider creating one using --init option.")
 	}
 
 	// Parse command line parameters again to insist on config parameters
 	opts.New(dts).Parse()
-	log.SetLevel(dts.LogLevel)
+
+	if dts.LogLevel != 0 {
+		log.SetLevel(dts.LogLevel)
+	}
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &DtaService{
@@ -117,7 +124,7 @@ func main() {
 
 }
 
-// Transform Document
+// TransformDocument
 func (dtas *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
 
 	l, sOut, sErr := Work(req.GetDocument())

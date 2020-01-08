@@ -70,6 +70,7 @@ func main() {
 		RegistrarURL: "http://127.0.0.1:8761/eureka",
 		PortToListen: "50051",
 		CfgFile:      workingHomeDir + "/.dta/" + appName + "/config.json",
+		LogLevel:     log.WarnLevel,
 	}
 
 	// Parse to fill the defaults
@@ -78,7 +79,11 @@ func main() {
 		Version(VERSION).
 		Parse()
 
-	if dts.AppName != "" {
+	if dts.LogLevel != 0 {
+		log.SetLevel(dts.LogLevel)
+	}
+
+	if dts.AppName != "" && dts.CfgFile != "" {
 		dts.CfgFile = workingHomeDir + "/.dta/" + dts.AppName + "/config.json"
 	}
 
@@ -94,12 +99,14 @@ func main() {
 	// Parse config file
 	dts, err := pb.NewDocTransFromFile(dts.CfgFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Infoln("No config file found. Consider creating one using --init option.")
 	}
 
 	// Parse command line parameters again to insist on config parameters
 	opts.New(dts).Parse()
-	log.SetLevel(dts.LogLevel)
+	if dts.LogLevel != 0 {
+		log.SetLevel(dts.LogLevel)
+	}
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &DtaService{
@@ -112,7 +119,14 @@ func main() {
 
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
+	_configuredPort := gateway.dts.PortToListen
+
 	lis := gateway.dts.CreateListener(maxPortSeek) // for the service
+
+	if _configuredPort != gateway.dts.PortToListen {
+		log.Warnf("Listing on port %v instead on configured, but used port %v\n", gateway.dts.PortToListen, _configuredPort)
+	}
+
 	s := grpc.NewServer()
 
 	// We register ourselfs by using the dyn.port

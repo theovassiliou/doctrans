@@ -38,7 +38,7 @@ type DocTransServer struct {
 	IsSSL        bool   `opts:"group=Service" help:"Can the service be reached via SSL."`
 
 	LogLevel log.Level `opts:"group=Generic" help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
-	CfgFile  string    `opts:"group=Generic" help:"The config file to use"`
+	CfgFile  string    `opts:"group=Generic" help:"The config file to use" json:"-"`
 	Init     bool      `opts:"group=Generic" help:"Create a default config file as defined by cfg-file, if set. If not set ~/.dta/{AppName}/config.json will be created."`
 
 	registrar    *eureka.Client
@@ -151,7 +151,7 @@ func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRe
 func NewDocTransFromFile(fpath string) (*DocTransServer, error) {
 	fi, err := os.Open(fpath)
 	if err != nil {
-		return nil, err
+		return newDefaultDTS(), err
 	}
 
 	defer func() {
@@ -163,16 +163,21 @@ func NewDocTransFromFile(fpath string) (*DocTransServer, error) {
 	return NewDocTransFromReader(fi)
 }
 
-// NewDocTransFromReader creates a Client configured from a given reader.
-// The configuration is expected to use the JSON format.
-func NewDocTransFromReader(reader io.Reader) (*DocTransServer, error) {
-	d := &DocTransServer{
+func newDefaultDTS() *DocTransServer {
+	return &DocTransServer{
 		HostName:     defaultOrNot(getHostname(), os.Getenv("DTS_HostName")),
 		AppName:      defaultOrNot("", os.Getenv("DTS_AppName")),
 		PortToListen: defaultOrNot("50051", os.Getenv("DTS_PortToListen")),
 		RegistrarURL: defaultOrNot("http://127.0.0.1:8761/eureka", os.Getenv("DTS_RegistrarURL")),
 		DtaType:      "Service",
+		LogLevel:     log.WarnLevel,
 	}
+}
+
+// NewDocTransFromReader creates a Client configured from a given reader.
+// The configuration is expected to use the JSON format.
+func NewDocTransFromReader(reader io.Reader) (*DocTransServer, error) {
+	d := newDefaultDTS()
 
 	b, err := ioutil.ReadAll(reader)
 	if err != nil {

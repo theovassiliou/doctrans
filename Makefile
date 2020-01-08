@@ -1,4 +1,11 @@
 build: dtaservice/dtaservice.pb.go swagger/index.html dtaservice/dtaservice.validator.pb.go
+	go build ./...
+
+
+.PHONY: gateway 
+
+gateway: 
+	go run gateway/gateway.go
 
 swagger/index.html: swagger/dtaservice.swagger.json
 	swagger-codegen generate -o swagger -i swagger/dtaservice.swagger.json -l html

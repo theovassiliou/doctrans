@@ -109,7 +109,14 @@ func main() {
 func startGrpcServer(gateway *Gateway, a chan string) {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
+	_configuredPort := gateway.dts.PortToListen
+
 	lis := gateway.dts.CreateListener(maxPortSeek) // for the service
+
+	if _configuredPort != gateway.dts.PortToListen {
+		log.Warnf("Listing on port %v instead on configured, but used port %v\n", gateway.dts.PortToListen, _configuredPort)
+	}
+
 	a <- gateway.dts.PortToListen
 
 	s := grpc.NewServer()

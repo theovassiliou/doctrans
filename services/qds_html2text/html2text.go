@@ -29,12 +29,8 @@ const (
 )
 
 // Work returns a nicely formatted text from a HTML input
-func Work(in *pb.DocumentRequest) (string, []string, error) {
-
-	input := in.GetDocument()
+func Work(input []byte, options []string) (string, []string, error) {
 	text, err := html2text.FromString(string(input), html2text.Options{PrettyTables: true})
-	log.WithFields(log.Fields{"Service": "Work"}).Debugf("The transformation result %s\n", text)
-
 	return string(text), []string{}, err
 }
 
@@ -54,7 +50,6 @@ func main() {
 		HTTPPort:     "80",
 		CfgFile:      workingHomeDir + "/.dta/" + appName + "/config.json",
 		LogLevel:     log.WarnLevel,
-		REST:         true,
 	}
 
 	// (1) SetUp Configuration
@@ -69,17 +64,16 @@ func main() {
 			// add others servers here
 		}),
 	}
-	mux := gateway.startGRPCService()
+	// blocking if no REST enabled
+	mux := gateway.startGRPCService(!dts.REST)
 
 	// (3) Start HTTP Server
-
-	if dts.REST {
-		// Start HTTP server (and proxy calls to gRPC server endpoint)
-		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", dts.HTTPPort)
-		if err := http.ListenAndServe(":"+dts.HTTPPort, mux); err != nil {
-			log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
-		}
+	// Start HTTP server (and proxy calls to gRPC server endpoint)
+	log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", dts.HTTPPort)
+	if err := http.ListenAndServe(":"+dts.HTTPPort, mux); err != nil {
+		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
 	}
+
 	return
 
 }
@@ -121,11 +115,13 @@ func setupConfiguration(config *pb.DocTransServer, workingHomeDir string) {
 
 }
 
-func (s *DtaService) startGRPCService() *runtime.ServeMux {
-
-	a := make(chan string)
-	go startGrpcServer(s, a)
-	grpcPort := <-a // receive the port it has registered at
+func (s *DtaService) startGRPCService(blocking bool) *runtime.ServeMux {
+	portCh := make(chan string)
+	if blocking {
+		startGrpcServer(s, nil)
+	}
+	go startGrpcServer(s, portCh)
+	grpcPort := <-portCh // receive the port it has registered at
 
 	// Setup context and mux
 	ctx := context.Background()
@@ -141,7 +137,7 @@ func (s *DtaService) startGRPCService() *runtime.ServeMux {
 	return mux
 }
 
-func startGrpcServer(dtaService *DtaService, a chan string) {
+func startGrpcServer(dtaService *DtaService, portCh chan string) {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
 	_configuredPort := dtaService.dts.PortToListen
@@ -152,7 +148,9 @@ func startGrpcServer(dtaService *DtaService, a chan string) {
 		log.Warnf("Listing on port %v instead on configured, but used port %v\n", dtaService.dts.PortToListen, _configuredPort)
 	}
 
-	a <- dtaService.dts.PortToListen
+	if portCh != nil {
+		portCh <- dtaService.dts.PortToListen
+	}
 
 	s := grpc.NewServer()
 
@@ -161,10 +159,10 @@ func startGrpcServer(dtaService *DtaService, a chan string) {
 		dtaService.dts.RegisterAtRegistry(dtaService.dts.HostName, dtaService.dts.AppName, pb.GetIPAdress(), dtaService.dts.PortToListen, "Gateway", dtaService.dts.TTL, dtaService.dts.IsSSL)
 	}
 
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	signalCh := make(chan os.Signal)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
-		for sigs := range c {
+		for sigs := range signalCh {
 			switch sigs {
 			case syscall.SIGTERM: // CTRL-D
 				if dtaService.dts.InstanceInfo() != nil {
@@ -189,19 +187,18 @@ func startGrpcServer(dtaService *DtaService, a chan string) {
 }
 
 // TransformDocument implements dtaservice.DTAServer
-func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
-	l, sOut, sErr := Work(in)
-	var errorS []string
-	if sErr != nil {
-		errorS = []string{sErr.Error()}
-	} else {
-		errorS = []string{}
+func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
+	transResult, stdOut, stdErr := Work(docReq.GetDocument(), docReq.GetOptions())
+	var errorS []string = []string{}
+	if stdErr != nil {
+		errorS = []string{stdErr.Error()}
 	}
-	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Received document: %s and has lines %s", string(in.GetDocument()), l)
+	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Received document: %s", string(docReq.GetDocument()))
+	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Transformation Result: %s", transResult)
 
 	return &pb.TransformDocumentReply{
-		TransDocument: []byte(l),
-		TransOutput:   sOut,
+		TransDocument: []byte(transResult),
+		TransOutput:   stdOut,
 		Error:         errorS,
 	}, nil
 }

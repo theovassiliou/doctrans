@@ -26,20 +26,23 @@ const (
 type DocTransServer struct {
 	UnimplementedDTAServerServer
 	//
+	Register      bool   `opts:"group=Registrar" help:"Register service with EUREKA, if set"`
 	RegistrarURL  string `opts:"group=Registrar" help:"Registry URL"`
 	RegistrarUser string `opts:"group=Registrar" help:"Registry User, no user used if not provided"`
 	RegistrarPWD  string `opts:"group=Registrar" help:"Registry User Password, no password used if not provided"`
 	TTL           uint   `opts:"group=Registrar" help:"Time in seconds to reregister at Registrar."`
 
 	HostName     string `opts:"group=Service" help:"If provided will be used as hostname, else automatically derived."`
-	AppName      string `opts:"group=Service" help:"ID of the service as e.g. 'DOC.TXT.COUNT.'"`
+	AppName      string `opts:"group=Service" help:"ID of the service"`
 	PortToListen string `opts:"group=Service" help:"On which port to listen for this service."`
 	DtaType      string `opts:"group=Service" help:"One of Gateway or Service. Service is assumed if not provided."`
-	IsSSL        bool   `opts:"group=Service" help:"Can the service be reached via SSL."`
+	IsSSL        bool   `opts:"group=Service" help:"Service reached via SSL, if set."`
+	REST         bool   `opts:"group=Service" help:"REST-API enabled on port 80, if set"`
+	HTTPPort     string `opts:"group=Service" help:"On which httpPort to listen for REST, if enableREST is set. Ignored otherwise."`
 
 	LogLevel log.Level `opts:"group=Generic" help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 	CfgFile  string    `opts:"group=Generic" help:"The config file to use" json:"-"`
-	Init     bool      `opts:"group=Generic" help:"Create a default config file as defined by cfg-file, if set. If not set ~/.dta/{AppName}/config.json will be created."`
+	Init     bool      `opts:"group=Generic" help:"Create a default config file as defined by cfg-file, if set. If not set ~/.dta/{AppName}/config.json will be created." json:"-"`
 
 	registrar    *eureka.Client
 	instanceInfo *eureka.InstanceInfo
@@ -165,6 +168,9 @@ func NewDocTransFromFile(fpath string) (*DocTransServer, error) {
 
 func newDefaultDTS() *DocTransServer {
 	return &DocTransServer{
+		Register:     false,
+		REST:         true,
+		HTTPPort:     defaultOrNot("80", os.Getenv("DTS_HTTPPort")),
 		HostName:     defaultOrNot(getHostname(), os.Getenv("DTS_HostName")),
 		AppName:      defaultOrNot("", os.Getenv("DTS_AppName")),
 		PortToListen: defaultOrNot("50051", os.Getenv("DTS_PortToListen")),

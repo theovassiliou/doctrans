@@ -9,9 +9,12 @@ require (
 	github.com/jpillora/opts v1.1.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mwitkow/go-proto-validators v0.2.0
+	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/sirupsen/logrus v1.4.2
+	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/theovassiliou/dta-server v0.0.0-20191014073152-c7f0430f0c85
 	github.com/theovassiliou/go-eureka-client v1.1.1
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
 	google.golang.org/grpc v1.25.1
+	jaytaylor.com/html2text v0.0.0-20190408195923-01ec452cbe43
 )

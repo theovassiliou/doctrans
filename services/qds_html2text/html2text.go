@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
@@ -59,24 +62,23 @@ func main() {
 
 	// (2) Init and register GRPC Service
 	lis := pb.GrpcLisInitAndReg(gateway.srvHandler)
-	qdsservices.CaptureSignals(gateway.srvHandler)
-
-	if !dts.REST {
-		// blocking
-		pb.StartGrpcServer(lis, gateway)
-	}
 
 	go pb.StartGrpcServer(lis, gateway)
 
 	// Start dta service by using the listener
 
-	//(3) Let's instanciate the the HTTP Server
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	pb.MuxHttpGrpc(ctx, dts.HTTPPort, gateway.srvHandler)
-
+	if dts.REST {
+		//(3) Let's instanciate the the HTTP Server
+		qdsservices.CaptureSignals(gateway.srvHandler)
+		ctx := context.Background()
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		pb.MuxHttpGrpc(ctx, dts.HTTPPort, gateway.srvHandler)
+	} else {
+		signalCh := make(chan os.Signal)
+		signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+		qdsservices.HandleSignals(gateway.srvHandler, signalCh)
+	}
 	return
 }
 
@@ -87,8 +89,8 @@ func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentR
 	if stdErr != nil {
 		errorS = []string{stdErr.Error()}
 	}
-	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Received document: %s", string(docReq.GetDocument()))
-	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Transformation Result: %s", transResult)
+	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Received document: %s", string(docReq.GetDocument()))
+	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Transformation Result: %s", transResult)
 
 	return &pb.TransformDocumentReply{
 		TransDocument: []byte(transResult),

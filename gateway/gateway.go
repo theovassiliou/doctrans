@@ -14,6 +14,7 @@ import (
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 )
 
 var version = ".1"
@@ -122,7 +123,7 @@ func startGrpcServer(gateway *Gateway, a chan string) {
 	s := grpc.NewServer()
 
 	// We register ourselfs by using the dyn.port
-	gateway.dts.RegisterAtRegistry(gateway.dts.HostName, gateway.dts.AppName, pb.GetIPAdress(), gateway.dts.PortToListen, "Gateway", gateway.dts.TTL, gateway.dts.IsSSL)
+	gateway.dts.RegisterAtRegistry(gateway.dts.HostName, gateway.dts.AppName, aux.GetIPAdress(), gateway.dts.PortToListen, "Gateway", gateway.dts.TTL, gateway.dts.IsSSL)
 
 	pb.RegisterDTAServerServer(s, gateway)
 	// Start dta service by using the listener

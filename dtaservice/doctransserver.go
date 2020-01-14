@@ -2,23 +2,16 @@ package dtaservice
 
 import (
 	"context"
-	"encoding/json"
-	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
-	"path"
 	"strconv"
-	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/jpillora/opts"
-	aux "github.com/theovassiliou/dta-server/ipaux"
 	grpc "google.golang.org/grpc"
 
 	"github.com/carlescere/scheduler"
 	log "github.com/sirupsen/logrus"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 	"github.com/theovassiliou/go-eureka-client/eureka"
 )
 
@@ -53,51 +46,6 @@ type DocTransServer struct {
 	heartBeatJob *scheduler.Job
 }
 
-func (dtas *DocTransServer) InstanceInfo() *eureka.InstanceInfo {
-	return dtas.instanceInfo
-}
-func (dtas *DocTransServer) UnregisterAtRegistry() {
-	if dtas.instanceInfo != nil {
-		dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
-		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("Unregister service %s with id %s", dtas.instanceInfo.App, dtas.instanceInfo.InstanceID)
-	} else {
-		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("service %s allready unregistered", dtas.instanceInfo.App)
-	}
-	dtas.heartBeatJob.Quit <- true
-	dtas.instanceInfo = nil
-}
-
-// RegisterAtRegistry registers the DocTransServer at the Area Registry
-func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, dtaType string, ttl uint, isSsl bool) {
-
-	// Build Eureka Configuration
-	dtas.registrar = eureka.NewClient([]string{
-		dtas.RegistrarURL,
-		// add others servers here
-	})
-
-	// Create the app instance
-	dtas.instanceInfo = eureka.NewInstanceInfo(hostname, app, ipAddress, port, ttl, isSsl) //Create a new instance to register
-	// Add some meta data. Currently no meaning
-	// TODO: Remove this playground if not further required
-	dtas.instanceInfo.Metadata = &eureka.MetaData{
-		Map: make(map[string]string),
-	}
-	dtas.instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
-	// Register instance and heartbeat for Eureka
-	dtas.registrar.RegisterInstance(app, dtas.instanceInfo) // Register new instance in your eureka(s)
-	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s", app)
-
-	job := func() {
-		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Trace("sending heartbeat : ", time.Now().UTC())
-		dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
-	}
-
-	// Run every 25 seconds but not now.
-	// FIXME:0 We have somehow be able to deregister the heartbeat
-	dtas.heartBeatJob, _ = scheduler.Every(25).Seconds().NotImmediately().Run(job)
-}
-
 func (dtas *DocTransServer) CreateListener(maxPortSeek int) net.Listener {
 	var lis net.Listener
 	var err error
@@ -124,26 +72,6 @@ func (dtas *DocTransServer) CreateListener(maxPortSeek int) net.Listener {
 	return lis
 }
 
-// NewConfigFile creates a new example config file and terminates.
-func (dtas *DocTransServer) NewConfigFile() error {
-
-	dir := path.Dir(dtas.CfgFile)
-
-	_, err := os.Open(dir)
-	if err != nil {
-		os.MkdirAll(dir, os.ModePerm)
-		_, err := os.Open(dir)
-		if err != nil {
-			return err
-		}
-	}
-
-	configJSON, _ := json.MarshalIndent(dtas, "", "  ")
-	err = ioutil.WriteFile(dtas.CfgFile, configJSON, 0644)
-	log.Infof("Wrote example configuration file to %s. Exiting.", dtas.CfgFile)
-	return nil
-}
-
 // ListServices implements dta.
 func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRequest) (*ListServicesResponse, error) {
 	log.WithFields(log.Fields{"Service": dtas.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
@@ -153,116 +81,8 @@ func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRe
 	return &ListServicesResponse{Services: services}, nil
 }
 
-// NewDocTransFromFile creates a DocTransServer from a given file path.
-// The given file is expected to use the JSON format.
-func NewDocTransFromFile(fpath string) (*DocTransServer, error) {
-	fi, err := os.Open(fpath)
-	if err != nil {
-		return newDefaultDTS(), err
-	}
-
-	defer func() {
-		if err := fi.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	return NewDocTransFromReader(fi)
-}
-
-func newDefaultDTS() *DocTransServer {
-	return &DocTransServer{
-		Register:     false,
-		REST:         true,
-		HTTPPort:     defaultOrNot("80", os.Getenv("DTS_HTTPPort")),
-		HostName:     defaultOrNot(getHostname(), os.Getenv("DTS_HostName")),
-		AppName:      defaultOrNot("", os.Getenv("DTS_AppName")),
-		PortToListen: defaultOrNot("50051", os.Getenv("DTS_PortToListen")),
-		RegistrarURL: defaultOrNot("http://127.0.0.1:8761/eureka", os.Getenv("DTS_RegistrarURL")),
-		DtaType:      "Service",
-		LogLevel:     log.WarnLevel,
-	}
-}
-
-// NewDocTransFromReader creates a Client configured from a given reader.
-// The configuration is expected to use the JSON format.
-func NewDocTransFromReader(reader io.Reader) (*DocTransServer, error) {
-	d := newDefaultDTS()
-
-	b, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(b, d)
-	if err != nil {
-		return nil, err
-	}
-	return d, nil
-}
-func defaultOrNot(d, v string) string {
-	if v == "" {
-		return d
-	}
-	return v
-}
-
-func getHostname() string {
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Info("Unable to find hostname from OS")
-		return ""
-	}
-	return hostname
-}
-
-func GetIPAdress() string {
-	ipAddress, err := aux.ExternalIP()
-	if err != nil {
-		log.Info("Unable to find IP address from OS")
-	}
-	return ipAddress
-}
-
 func (dtas *DocTransServer) ApplicationName() string {
 	return appName
-}
-
-func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) {
-	opts.New(config).
-		Repo("github.com/theovassiliou/doctrans").
-		Version(version).
-		Parse()
-
-	if config.LogLevel != 0 {
-		log.SetLevel(config.LogLevel)
-	}
-
-	if config.AppName != "" && config.CfgFile != "" {
-		config.CfgFile = workingHomeDir + "/.dta/" + config.AppName + "/config.json"
-	}
-
-	if config.Init {
-		config.CfgFile = config.CfgFile + ".example"
-		err := config.NewConfigFile()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Exit(0)
-	}
-
-	// Parse config file
-	config, err := NewDocTransFromFile(config.CfgFile)
-	if err != nil {
-		log.Infoln("No config file found. Consider creating one using --init option.")
-	}
-
-	// Parse command line parameters again to insist on config parameters
-	opts.New(config).Parse()
-	if config.LogLevel != 0 {
-		log.SetLevel(config.LogLevel)
-	}
-
 }
 
 // GrpcLisInitAndReg initialises a listener for the GRPC server and registers the grps services
@@ -280,7 +100,7 @@ func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
 
 	// We register ourselfs by using the dyn.port
 	if srvHandler.Register {
-		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, GetIPAdress(), srvHandler.PortToListen, "Gateway", srvHandler.TTL, srvHandler.IsSSL)
+		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, aux.GetIPAdress(), srvHandler.PortToListen, "Gateway", srvHandler.TTL, srvHandler.IsSSL)
 	}
 	return lis
 }

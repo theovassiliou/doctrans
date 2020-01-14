@@ -14,6 +14,7 @@ import (
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 )
 
 var version = ".1"
@@ -96,7 +97,7 @@ func main() {
 	s := grpc.NewServer()
 
 	// We register ourselfs by using the dyn.port
-	dts.RegisterAtRegistry(dts.HostName, dts.AppName, pb.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
+	dts.RegisterAtRegistry(dts.HostName, dts.AppName, aux.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -107,7 +108,7 @@ func main() {
 				if dts.InstanceInfo() != nil {
 					dts.UnregisterAtRegistry()
 				} else {
-					dts.RegisterAtRegistry(dts.HostName, dts.AppName, pb.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
+					dts.RegisterAtRegistry(dts.HostName, dts.AppName, aux.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
 				}
 			case syscall.SIGINT: // CTRL-C
 				dts.UnregisterAtRegistry()

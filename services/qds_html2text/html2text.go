@@ -36,8 +36,8 @@ func Work(input []byte, options []string) (string, []string, error) {
 
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
-	dts      *pb.DocTransServer
-	resolver *eureka.Client
+	srvHandler *pb.DocTransServer
+	resolver   *eureka.Client
 }
 
 func main() {
@@ -58,16 +58,34 @@ func main() {
 	// init the resolver so that we have access to the list of apps
 	// (2) Start GRPC Service
 	gateway := &DtaService{
-		dts: dts,
+		srvHandler: dts,
 		resolver: eureka.NewClient([]string{
 			dts.RegistrarURL,
 			// add others servers here
 		}),
 	}
-	// blocking if no REST enabled
-	mux := gateway.startGRPCService(!dts.REST)
+	if !dts.REST {
+		startGrpcServer(gateway, nil) // blocking
+	}
 
-	// (3) Start HTTP Server
+	a := make(chan string)
+	go startGrpcServer(gateway, a)
+	grpcPort := <-a // receive the port it has registered at
+
+	//(3) Let's instanciate the the HTTP Server
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	log.Debugf("GRPC Endpoint localhost:%s\n", grpcPort)
+	err := pb.RegisterDTAServerHandlerFromEndpoint(ctx, mux, "localhost:"+grpcPort, opts)
+	if err != nil {
+		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to register: %v", err)
+	}
+
+	// (4) Start HTTP Server
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
 	log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", dts.HTTPPort)
 	if err := http.ListenAndServe(":"+dts.HTTPPort, mux); err != nil {
@@ -115,69 +133,56 @@ func setupConfiguration(config *pb.DocTransServer, workingHomeDir string) {
 
 }
 
-func (s *DtaService) startGRPCService(blocking bool) *runtime.ServeMux {
-	portCh := make(chan string)
-	if blocking {
-		startGrpcServer(s, nil)
+func handleSignals(dtaService *DtaService, signalCh chan os.Signal) {
+	for sigs := range signalCh {
+		switch sigs {
+		case syscall.SIGTERM: // CTRL-D
+			log.Debugln("Received SIGTERM")
+			if dtaService.srvHandler.InstanceInfo() != nil {
+				dtaService.srvHandler.UnregisterAtRegistry()
+			} else {
+				dtaService.srvHandler.RegisterAtRegistry(dtaService.srvHandler.HostName, dtaService.srvHandler.AppName, pb.GetIPAdress(), dtaService.srvHandler.PortToListen, "Service", dtaService.srvHandler.TTL, dtaService.srvHandler.IsSSL)
+			}
+		case syscall.SIGINT: // CTRL-C
+			log.Debugln("Received SIGINT")
+			if dtaService.srvHandler.InstanceInfo() != nil {
+				dtaService.srvHandler.UnregisterAtRegistry()
+			}
+			os.Exit(1)
+		}
 	}
-	go startGrpcServer(s, portCh)
-	grpcPort := <-portCh // receive the port it has registered at
+}
 
-	// Setup context and mux
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	mux := runtime.NewServeMux()
-
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	log.Debugf("GRPC Endpoint localhost:%s\n", grpcPort)
-	if err := pb.RegisterDTAServerHandlerFromEndpoint(ctx, mux, "localhost:"+grpcPort, opts); err != nil {
-		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to register: %v", err)
-	}
-	return mux
+func (s *DtaService) captureSignals() {
+	signalCh := make(chan os.Signal)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	go handleSignals(s, signalCh)
 }
 
 func startGrpcServer(dtaService *DtaService, portCh chan string) {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
-	_configuredPort := dtaService.dts.PortToListen
+	_configuredPort := dtaService.srvHandler.PortToListen
 
-	lis := dtaService.dts.CreateListener(maxPortSeek) // for the service
+	lis := dtaService.srvHandler.CreateListener(maxPortSeek) // for the service
 
-	if _configuredPort != dtaService.dts.PortToListen {
-		log.Warnf("Listing on port %v instead on configured, but used port %v\n", dtaService.dts.PortToListen, _configuredPort)
+	if _configuredPort != dtaService.srvHandler.PortToListen {
+		log.Warnf("Listing on port %v instead on configured, but used port %v\n", dtaService.srvHandler.PortToListen, _configuredPort)
 	}
 
 	if portCh != nil {
-		portCh <- dtaService.dts.PortToListen
+		portCh <- dtaService.srvHandler.PortToListen
 	}
 
 	s := grpc.NewServer()
 
 	// We register ourselfs by using the dyn.port
-	if dtaService.dts.Register {
-		dtaService.dts.RegisterAtRegistry(dtaService.dts.HostName, dtaService.dts.AppName, pb.GetIPAdress(), dtaService.dts.PortToListen, "Gateway", dtaService.dts.TTL, dtaService.dts.IsSSL)
+	if dtaService.srvHandler.Register {
+		dtaService.srvHandler.RegisterAtRegistry(dtaService.srvHandler.HostName, dtaService.srvHandler.AppName, pb.GetIPAdress(), dtaService.srvHandler.PortToListen, "Gateway", dtaService.srvHandler.TTL, dtaService.srvHandler.IsSSL)
 	}
 
-	signalCh := make(chan os.Signal)
-	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		for sigs := range signalCh {
-			switch sigs {
-			case syscall.SIGTERM: // CTRL-D
-				if dtaService.dts.InstanceInfo() != nil {
-					dtaService.dts.UnregisterAtRegistry()
-				} else {
-					dtaService.dts.RegisterAtRegistry(dtaService.dts.HostName, dtaService.dts.AppName, pb.GetIPAdress(), dtaService.dts.PortToListen, "Service", dtaService.dts.TTL, dtaService.dts.IsSSL)
-				}
-			case syscall.SIGINT: // CTRL-C
-				if dtaService.dts.InstanceInfo() != nil {
-					dtaService.dts.UnregisterAtRegistry()
-				}
-				os.Exit(1)
-			}
-		}
-	}()
+	dtaService.captureSignals()
+
 	pb.RegisterDTAServerServer(s, dtaService)
 	// Start dta service by using the listener
 	if err := s.Serve(lis); err != nil {

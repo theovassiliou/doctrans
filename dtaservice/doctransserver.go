@@ -6,12 +6,16 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/jpillora/opts"
 	aux "github.com/theovassiliou/dta-server/ipaux"
+	grpc "google.golang.org/grpc"
 
 	"github.com/carlescere/scheduler"
 	log "github.com/sirupsen/logrus"
@@ -222,4 +226,87 @@ func GetIPAdress() string {
 
 func (dtas *DocTransServer) ApplicationName() string {
 	return appName
+}
+
+func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) {
+	opts.New(config).
+		Repo("github.com/theovassiliou/doctrans").
+		Version(version).
+		Parse()
+
+	if config.LogLevel != 0 {
+		log.SetLevel(config.LogLevel)
+	}
+
+	if config.AppName != "" && config.CfgFile != "" {
+		config.CfgFile = workingHomeDir + "/.dta/" + config.AppName + "/config.json"
+	}
+
+	if config.Init {
+		config.CfgFile = config.CfgFile + ".example"
+		err := config.NewConfigFile()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Exit(0)
+	}
+
+	// Parse config file
+	config, err := NewDocTransFromFile(config.CfgFile)
+	if err != nil {
+		log.Infoln("No config file found. Consider creating one using --init option.")
+	}
+
+	// Parse command line parameters again to insist on config parameters
+	opts.New(config).Parse()
+	if config.LogLevel != 0 {
+		log.SetLevel(config.LogLevel)
+	}
+
+}
+
+// GrpcLisInitAndReg initialises a listener for the GRPC server and registers the grps services
+// Returns the listeners and the port on which the GRPC server listens
+func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
+	// We first create the listener to know the dynamically allocated port we listen on
+	const maxPortSeek int = 20
+	_configuredPort := srvHandler.PortToListen
+
+	lis := srvHandler.CreateListener(maxPortSeek) // for the service
+
+	if _configuredPort != srvHandler.PortToListen {
+		log.Warnf("Listing on port %v instead on configured, but used port %v\n", srvHandler.PortToListen, _configuredPort)
+	}
+
+	// We register ourselfs by using the dyn.port
+	if srvHandler.Register {
+		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, GetIPAdress(), srvHandler.PortToListen, "Gateway", srvHandler.TTL, srvHandler.IsSSL)
+	}
+	return lis
+}
+
+func StartGrpcServer(lis net.Listener, dtaServer DTAServerServer) {
+	s := grpc.NewServer()
+	RegisterDTAServerServer(s, dtaServer)
+	if err := s.Serve(lis); err != nil {
+		log.WithFields(log.Fields{"Service": "Registrar", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
+	}
+}
+
+func MuxHttpGrpc(ctx context.Context, HTTPPort string, srvHandler *DocTransServer) {
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	grpcPort := srvHandler.PortToListen
+	log.Debugf("GRPC Endpoint localhost:%s\n", grpcPort)
+	err := RegisterDTAServerHandlerFromEndpoint(ctx, mux, "localhost:"+grpcPort, opts)
+	if err != nil {
+		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to register: %v", err)
+	}
+
+	// (4) Start HTTP Server
+	// Start HTTP server (and proxy calls to gRPC server endpoint)
+	log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", HTTPPort)
+	if err := http.ListenAndServe(":"+HTTPPort, mux); err != nil {
+		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
+	}
 }

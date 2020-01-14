@@ -2,21 +2,14 @@ package main
 
 import (
 	"context"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
 	"jaytaylor.com/html2text"
 
-	"google.golang.org/grpc"
-
-	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	"github.com/theovassiliou/doctrans/qdsservices"
 )
 
 var version = ".1"
@@ -53,10 +46,9 @@ func main() {
 	}
 
 	// (1) SetUp Configuration
-	setupConfiguration(dts, workingHomeDir)
+	pb.SetupConfiguration(dts, workingHomeDir, VERSION)
 
 	// init the resolver so that we have access to the list of apps
-	// (2) Start GRPC Service
 	gateway := &DtaService{
 		srvHandler: dts,
 		resolver: eureka.NewClient([]string{
@@ -64,131 +56,28 @@ func main() {
 			// add others servers here
 		}),
 	}
+
+	// (2) Init and register GRPC Service
+	lis := pb.GrpcLisInitAndReg(gateway.srvHandler)
+	qdsservices.CaptureSignals(gateway.srvHandler)
+
 	if !dts.REST {
-		startGrpcServer(gateway, nil) // blocking
+		// blocking
+		pb.StartGrpcServer(lis, gateway)
 	}
 
-	a := make(chan string)
-	go startGrpcServer(gateway, a)
-	grpcPort := <-a // receive the port it has registered at
+	go pb.StartGrpcServer(lis, gateway)
+
+	// Start dta service by using the listener
 
 	//(3) Let's instanciate the the HTTP Server
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	log.Debugf("GRPC Endpoint localhost:%s\n", grpcPort)
-	err := pb.RegisterDTAServerHandlerFromEndpoint(ctx, mux, "localhost:"+grpcPort, opts)
-	if err != nil {
-		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to register: %v", err)
-	}
-
-	// (4) Start HTTP Server
-	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", dts.HTTPPort)
-	if err := http.ListenAndServe(":"+dts.HTTPPort, mux); err != nil {
-		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
-	}
+	pb.MuxHttpGrpc(ctx, dts.HTTPPort, gateway.srvHandler)
 
 	return
-
-}
-
-func setupConfiguration(config *pb.DocTransServer, workingHomeDir string) {
-	opts.New(config).
-		Repo("github.com/theovassiliou/doctrans").
-		Version(VERSION).
-		Parse()
-
-	if config.LogLevel != 0 {
-		log.SetLevel(config.LogLevel)
-	}
-
-	if config.AppName != "" && config.CfgFile != "" {
-		config.CfgFile = workingHomeDir + "/.dta/" + config.AppName + "/config.json"
-	}
-
-	if config.Init {
-		config.CfgFile = config.CfgFile + ".example"
-		err := config.NewConfigFile()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Exit(0)
-	}
-
-	// Parse config file
-	config, err := pb.NewDocTransFromFile(config.CfgFile)
-	if err != nil {
-		log.Infoln("No config file found. Consider creating one using --init option.")
-	}
-
-	// Parse command line parameters again to insist on config parameters
-	opts.New(config).Parse()
-	if config.LogLevel != 0 {
-		log.SetLevel(config.LogLevel)
-	}
-
-}
-
-func handleSignals(dtaService *DtaService, signalCh chan os.Signal) {
-	for sigs := range signalCh {
-		switch sigs {
-		case syscall.SIGTERM: // CTRL-D
-			log.Debugln("Received SIGTERM")
-			if dtaService.srvHandler.InstanceInfo() != nil {
-				dtaService.srvHandler.UnregisterAtRegistry()
-			} else {
-				dtaService.srvHandler.RegisterAtRegistry(dtaService.srvHandler.HostName, dtaService.srvHandler.AppName, pb.GetIPAdress(), dtaService.srvHandler.PortToListen, "Service", dtaService.srvHandler.TTL, dtaService.srvHandler.IsSSL)
-			}
-		case syscall.SIGINT: // CTRL-C
-			log.Debugln("Received SIGINT")
-			if dtaService.srvHandler.InstanceInfo() != nil {
-				dtaService.srvHandler.UnregisterAtRegistry()
-			}
-			os.Exit(1)
-		}
-	}
-}
-
-func (s *DtaService) captureSignals() {
-	signalCh := make(chan os.Signal)
-	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	go handleSignals(s, signalCh)
-}
-
-func startGrpcServer(dtaService *DtaService, portCh chan string) {
-	// We first create the listener to know the dynamically allocated port we listen on
-	const maxPortSeek int = 20
-	_configuredPort := dtaService.srvHandler.PortToListen
-
-	lis := dtaService.srvHandler.CreateListener(maxPortSeek) // for the service
-
-	if _configuredPort != dtaService.srvHandler.PortToListen {
-		log.Warnf("Listing on port %v instead on configured, but used port %v\n", dtaService.srvHandler.PortToListen, _configuredPort)
-	}
-
-	if portCh != nil {
-		portCh <- dtaService.srvHandler.PortToListen
-	}
-
-	s := grpc.NewServer()
-
-	// We register ourselfs by using the dyn.port
-	if dtaService.srvHandler.Register {
-		dtaService.srvHandler.RegisterAtRegistry(dtaService.srvHandler.HostName, dtaService.srvHandler.AppName, pb.GetIPAdress(), dtaService.srvHandler.PortToListen, "Gateway", dtaService.srvHandler.TTL, dtaService.srvHandler.IsSSL)
-	}
-
-	dtaService.captureSignals()
-
-	pb.RegisterDTAServerServer(s, dtaService)
-	// Start dta service by using the listener
-	if err := s.Serve(lis); err != nil {
-		log.WithFields(log.Fields{"Service": "Registrar", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
-	}
-
 }
 
 // TransformDocument implements dtaservice.DTAServer

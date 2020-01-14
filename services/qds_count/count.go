@@ -5,17 +5,17 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"os"
+	"os/signal"
 	"regexp"
+	"syscall"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
 
-	"google.golang.org/grpc"
-
-	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
-	aux "github.com/theovassiliou/doctrans/ipaux"
+	"github.com/theovassiliou/doctrans/qdsservices"
 )
 
 var version = ".1"
@@ -40,9 +40,8 @@ var re *regexp.Regexp = regexp.MustCompile(`[\S]+`)
 // lines	count the numnber of lines
 // words		count the number of words
 // The Service returns  the number of lines, words, and bytes contained in the input document
-func Work(in *pb.DocumentRequest) (string, []string, error) {
+func Work(input []byte, options []string) (string, []string, error) {
 
-	input := in.GetDocument()
 	b := len(input)
 	l, err := counter(bytes.NewReader(input), []byte{'\n'})
 	w := len(re.FindAllString(string(input), -1))
@@ -60,8 +59,8 @@ func Work(in *pb.DocumentRequest) (string, []string, error) {
 
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
-	dts      *pb.DocTransServer
-	resolver *eureka.Client
+	srvHandler *pb.DocTransServer
+	resolver   *eureka.Client
 }
 
 func main() {
@@ -69,76 +68,45 @@ func main() {
 
 	dts := &pb.DocTransServer{
 		RegistrarURL: "http://127.0.0.1:8761/eureka",
+		AppName:      appName,
 		PortToListen: "50051",
+		HTTPPort:     "80",
 		CfgFile:      workingHomeDir + "/.dta/" + appName + "/config.json",
 		LogLevel:     log.WarnLevel,
 	}
 
-	// Parse to fill the defaults
-	opts.New(dts).
-		Repo("github.com/theovassiliou/doctrans").
-		Version(VERSION).
-		Parse()
-
-	if dts.LogLevel != 0 {
-		log.SetLevel(dts.LogLevel)
-	}
-
-	if dts.AppName != "" && dts.CfgFile != "" {
-		dts.CfgFile = workingHomeDir + "/.dta/" + dts.AppName + "/config.json"
-	}
-
-	if dts.Init {
-		dts.CfgFile = dts.CfgFile + ".example"
-		err := dts.NewConfigFile()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Exit(0)
-	}
-
-	// Parse config file
-	dts, err := pb.NewDocTransFromFile(dts.CfgFile)
-	if err != nil {
-		log.Infoln("No config file found. Consider creating one using --init option.")
-	}
-
-	// Parse command line parameters again to insist on config parameters
-	opts.New(dts).Parse()
-	if dts.LogLevel != 0 {
-		log.SetLevel(dts.LogLevel)
-	}
+	// (1) SetUp Configuration
+	pb.SetupConfiguration(dts, workingHomeDir, VERSION)
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &DtaService{
-		dts: dts,
+		srvHandler: dts,
 		resolver: eureka.NewClient([]string{
 			dts.RegistrarURL,
 			// add others servers here
 		}),
 	}
 
-	// We first create the listener to know the dynamically allocated port we listen on
-	const maxPortSeek int = 20
-	_configuredPort := gateway.dts.PortToListen
+	// (2) Init and register GRPC Service
+	lis := pb.GrpcLisInitAndReg(gateway.srvHandler)
 
-	lis := gateway.dts.CreateListener(maxPortSeek) // for the service
+	go pb.StartGrpcServer(lis, gateway)
 
-	if _configuredPort != gateway.dts.PortToListen {
-		log.Warnf("Listing on port %v instead on configured, but used port %v\n", gateway.dts.PortToListen, _configuredPort)
-	}
-
-	s := grpc.NewServer()
-
-	// We register ourselfs by using the dyn.port
-	dts.RegisterAtRegistry(dts.HostName, dts.AppName, aux.GetIPAdress(), dts.PortToListen, "Service", dts.TTL, dts.IsSSL)
-
-	pb.RegisterDTAServerServer(s, gateway)
 	// Start dta service by using the listener
-	if err := s.Serve(lis); err != nil {
-		log.WithFields(log.Fields{"Service": "Registrar", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
-	}
 
+	if dts.REST {
+		//(3) Let's instanciate the the HTTP Server
+		qdsservices.CaptureSignals(gateway.srvHandler)
+		ctx := context.Background()
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		pb.MuxHttpGrpc(ctx, dts.HTTPPort, gateway.srvHandler)
+	} else {
+		signalCh := make(chan os.Signal)
+		signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+		qdsservices.HandleSignals(gateway.srvHandler, signalCh)
+	}
+	return
 }
 
 func counter(r io.Reader, sep []byte) (int, error) {
@@ -161,7 +129,7 @@ func counter(r io.Reader, sep []byte) (int, error) {
 
 // TransformDocument implements dtaservice.DTAServer
 func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
-	l, sOut, sErr := Work(in)
+	l, sOut, sErr := Work(in.GetDocument(), in.GetOptions())
 	var errorS []string
 	if sErr != nil {
 		errorS = []string{sErr.Error()}
@@ -177,15 +145,15 @@ func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	}, nil
 }
 
-func (dtas *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
-	log.WithFields(log.Fields{"Service": dtas.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
-	log.WithFields(log.Fields{"Service": dtas.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", dtas.ApplicationName())
+func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
+	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
+	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", s.ApplicationName())
 	services := (&pb.ListServicesResponse{}).Services
-	services = append(services, dtas.ApplicationName())
+	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
 
 }
 
-func (dtas *DtaService) ApplicationName() string {
+func (s *DtaService) ApplicationName() string {
 	return appName
 }

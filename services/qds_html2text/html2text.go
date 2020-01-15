@@ -83,7 +83,7 @@ func main() {
 }
 
 // TransformDocument implements dtaservice.DTAServer
-func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
+func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	transResult, stdOut, stdErr := Work(docReq.GetDocument(), docReq.GetOptions())
 	var errorS []string = []string{}
 	if stdErr != nil {
@@ -92,7 +92,7 @@ func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentR
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Received document: %s", string(docReq.GetDocument()))
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Transformation Result: %s", transResult)
 
-	return &pb.TransformDocumentReply{
+	return &pb.TransformDocumentResponse{
 		TransDocument: []byte(transResult),
 		TransOutput:   stdOut,
 		Error:         errorS,

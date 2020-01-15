@@ -134,7 +134,7 @@ func startGrpcServer(gateway *Gateway, a chan string) {
 }
 
 // TransformDocument looks up the requested services via the resolver and forwards the request to the resolved service.
-func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
+func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	log.WithFields(log.Fields{"Service": dtas.dts.AppName, "Status": "TransformDocument"}).Debugf("Service requested: %#v", in.GetServiceName())
 	log.WithFields(log.Fields{"Service": dtas.dts.AppName, "Status": "TransformDocument"}).Tracef("FileName: %v", in.GetFileName())
 	log.WithFields(log.Fields{"Service": dtas.dts.AppName, "Status": "TransformDocument"}).Tracef("Option: %v", in.GetOptions())
@@ -144,7 +144,7 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	a, err := dtas.resolver.GetApplication(in.GetServiceName())
 	if err != nil || len(a.Instances) <= 0 {
 		log.Errorf("Couldn't find server for app %s", in.GetServiceName())
-		return &pb.TransformDocumentReply{
+		return &pb.TransformDocumentResponse{
 			TransDocument: []byte{},
 			TransOutput:   []string{},
 			Error:         []string{"Could not find service", "Service requested: " + in.GetServiceName()},

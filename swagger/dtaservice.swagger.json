@@ -11,32 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/v1/document/transform-pipe": {
-      "post": {
-        "operationId": "TransformPipe",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
-            }
-          }
-        ],
-        "tags": [
-          "DTAServer"
-        ]
-      }
-    },
     "/v1/dta/document/transform": {
       "post": {
         "summary": "Request to transform a plain text document",
@@ -45,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
           }
         },
@@ -56,6 +30,32 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/dtaserviceDocumentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DTAServer"
+        ]
+      }
+    },
+    "/v1/dta/document/transform-pipe": {
+      "post": {
+        "operationId": "TransformPipe",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
             }
           }
         ],
@@ -115,7 +115,7 @@
         }
       }
     },
-    "dtaserviceTransformDocumentReply": {
+    "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "properties": {
         "trans_document": {

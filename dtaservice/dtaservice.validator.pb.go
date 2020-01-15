@@ -23,7 +23,7 @@ func (this *DocumentRequest) Validate() error {
 	}
 	return nil
 }
-func (this *TransformDocumentReply) Validate() error {
+func (this *TransformDocumentResponse) Validate() error {
 	return nil
 }
 func (this *ListServiceRequest) Validate() error {

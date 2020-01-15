@@ -106,7 +106,7 @@ func (a *Client) TransformPipe(params *TransformPipeParams) (*TransformPipeOK, e
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "TransformPipe",
 		Method:             "POST",
-		PathPattern:        "/v1/document/transform-pipe",
+		PathPattern:        "/v1/dta/document/transform-pipe",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},

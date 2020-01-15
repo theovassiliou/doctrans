@@ -25,7 +25,7 @@ type TransformDocumentOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *rest_models.DtaserviceTransformDocumentReply `json:"body,omitempty"`
+	Payload *rest_models.DtaserviceTransformDocumentResponse `json:"body,omitempty"`
 }
 
 // NewTransformDocumentOK creates TransformDocumentOK with default headers values
@@ -35,13 +35,13 @@ func NewTransformDocumentOK() *TransformDocumentOK {
 }
 
 // WithPayload adds the payload to the transform document o k response
-func (o *TransformDocumentOK) WithPayload(payload *rest_models.DtaserviceTransformDocumentReply) *TransformDocumentOK {
+func (o *TransformDocumentOK) WithPayload(payload *rest_models.DtaserviceTransformDocumentResponse) *TransformDocumentOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the transform document o k response
-func (o *TransformDocumentOK) SetPayload(payload *rest_models.DtaserviceTransformDocumentReply) {
+func (o *TransformDocumentOK) SetPayload(payload *rest_models.DtaserviceTransformDocumentResponse) {
 	o.Payload = payload
 }
 

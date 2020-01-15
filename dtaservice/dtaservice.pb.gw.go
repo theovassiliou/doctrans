@@ -291,7 +291,7 @@ var (
 
 	pattern_DTAServer_ListServices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "dta", "service", "list"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DTAServer_TransformPipe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "document", "transform-pipe"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DTAServer_TransformPipe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "dta", "document", "transform-pipe"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

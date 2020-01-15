@@ -35,7 +35,7 @@ func (o *TransformPipeURL) SetBasePath(bp string) {
 func (o *TransformPipeURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/v1/document/transform-pipe"
+	var _path = "/v1/dta/document/transform-pipe"
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)

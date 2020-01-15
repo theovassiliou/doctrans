@@ -46,20 +46,20 @@ func NewTransformDocumentOK() *TransformDocumentOK {
 A successful response.
 */
 type TransformDocumentOK struct {
-	Payload *rest_models.DtaserviceTransformDocumentReply
+	Payload *rest_models.DtaserviceTransformDocumentResponse
 }
 
 func (o *TransformDocumentOK) Error() string {
 	return fmt.Sprintf("[POST /v1/dta/document/transform][%d] transformDocumentOK  %+v", 200, o.Payload)
 }
 
-func (o *TransformDocumentOK) GetPayload() *rest_models.DtaserviceTransformDocumentReply {
+func (o *TransformDocumentOK) GetPayload() *rest_models.DtaserviceTransformDocumentResponse {
 	return o.Payload
 }
 
 func (o *TransformDocumentOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(rest_models.DtaserviceTransformDocumentReply)
+	o.Payload = new(rest_models.DtaserviceTransformDocumentResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

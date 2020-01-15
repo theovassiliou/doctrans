@@ -58,7 +58,7 @@ func main() {
 			log.Println(document)
 			text, _ := html2text.FromString(string(document), html2text.Options{PrettyTables: true})
 
-			return d_t_a_server.NewTransformDocumentOK().WithPayload(&rest_models.DtaserviceTransformDocumentReply{
+			return d_t_a_server.NewTransformDocumentOK().WithPayload(&rest_models.DtaserviceTransformDocumentResponse{
 				TransDocument: []byte(text),
 				TransOutput:   []string{fileName},
 			})

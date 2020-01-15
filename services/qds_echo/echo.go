@@ -81,7 +81,7 @@ func main() {
 }
 
 // TransformDocument
-func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
+func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 
 	l, sOut, sErr := Work(req.GetDocument())
 	var errorS []string
@@ -92,7 +92,7 @@ func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequ
 	}
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Received document: %s and echoing", string(req.GetDocument()))
 
-	return &pb.TransformDocumentReply{
+	return &pb.TransformDocumentResponse{
 		TransDocument: []byte(l),
 		TransOutput:   sOut,
 		Error:         errorS,

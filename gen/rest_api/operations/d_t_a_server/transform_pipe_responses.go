@@ -25,7 +25,7 @@ type TransformPipeOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *rest_models.DtaserviceTransformDocumentReply `json:"body,omitempty"`
+	Payload *rest_models.DtaserviceTransformDocumentResponse `json:"body,omitempty"`
 }
 
 // NewTransformPipeOK creates TransformPipeOK with default headers values
@@ -35,13 +35,13 @@ func NewTransformPipeOK() *TransformPipeOK {
 }
 
 // WithPayload adds the payload to the transform pipe o k response
-func (o *TransformPipeOK) WithPayload(payload *rest_models.DtaserviceTransformDocumentReply) *TransformPipeOK {
+func (o *TransformPipeOK) WithPayload(payload *rest_models.DtaserviceTransformDocumentResponse) *TransformPipeOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the transform pipe o k response
-func (o *TransformPipeOK) SetPayload(payload *rest_models.DtaserviceTransformDocumentReply) {
+func (o *TransformPipeOK) SetPayload(payload *rest_models.DtaserviceTransformDocumentResponse) {
 	o.Payload = payload
 }
 

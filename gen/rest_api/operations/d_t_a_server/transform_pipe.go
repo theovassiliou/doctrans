@@ -29,7 +29,7 @@ func NewTransformPipe(ctx *middleware.Context, handler TransformPipeHandler) *Tr
 	return &TransformPipe{Context: ctx, Handler: handler}
 }
 
-/*TransformPipe swagger:route POST /v1/document/transform-pipe DTAServer transformPipe
+/*TransformPipe swagger:route POST /v1/dta/document/transform-pipe DTAServer transformPipe
 
 TransformPipe transform pipe API
 

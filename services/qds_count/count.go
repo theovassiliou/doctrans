@@ -128,7 +128,7 @@ func counter(r io.Reader, sep []byte) (int, error) {
 }
 
 // TransformDocument implements dtaservice.DTAServer
-func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentReply, error) {
+func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	l, sOut, sErr := Work(in.GetDocument(), in.GetOptions())
 	var errorS []string
 	if sErr != nil {
@@ -138,7 +138,7 @@ func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	}
 	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Received document: %s and has lines %s", string(in.GetDocument()), l)
 
-	return &pb.TransformDocumentReply{
+	return &pb.TransformDocumentResponse{
 		TransDocument: []byte(l),
 		TransOutput:   sOut,
 		Error:         errorS,

@@ -268,7 +268,7 @@ func (o *DtaserviceProtoAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/v1/document/transform-pipe"] = d_t_a_server.NewTransformPipe(o.context, o.DtaServerTransformPipeHandler)
+	o.handlers["POST"]["/v1/dta/document/transform-pipe"] = d_t_a_server.NewTransformPipe(o.context, o.DtaServerTransformPipeHandler)
 
 }
 

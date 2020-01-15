@@ -34,7 +34,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 // The DTA service definition.
 service DTAServer {
   // Request to transform a plain text document
-  rpc TransformDocument (DocumentRequest) returns (TransformDocumentReply) {
+  rpc TransformDocument (DocumentRequest) returns (TransformDocumentResponse) {
        option (google.api.http) = {
         post: "/v1/dta/document/transform"
         body: "*"
@@ -45,9 +45,9 @@ service DTAServer {
       get: "/v1/dta/service/list"
     };
   }
-  rpc TransformPipe(TransformPipeRequest) returns (TransformDocumentReply) {
+  rpc TransformPipe(TransformPipeRequest) returns (TransformDocumentResponse) {
     option (google.api.http) = {
-      post: "/v1/document/transform-pipe"
+      post: "/v1/dta/document/transform-pipe"
       body: "*"
     };
   }
@@ -62,7 +62,7 @@ message DocumentRequest {
 }
 
 // The response message containing the transformed message
-message TransformDocumentReply {
+message TransformDocumentResponse {
   bytes trans_document = 1;
   repeated string trans_output = 2;
   repeated string error = 3;

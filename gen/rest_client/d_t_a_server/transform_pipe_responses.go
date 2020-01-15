@@ -46,20 +46,20 @@ func NewTransformPipeOK() *TransformPipeOK {
 A successful response.
 */
 type TransformPipeOK struct {
-	Payload *rest_models.DtaserviceTransformDocumentReply
+	Payload *rest_models.DtaserviceTransformDocumentResponse
 }
 
 func (o *TransformPipeOK) Error() string {
-	return fmt.Sprintf("[POST /v1/document/transform-pipe][%d] transformPipeOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[POST /v1/dta/document/transform-pipe][%d] transformPipeOK  %+v", 200, o.Payload)
 }
 
-func (o *TransformPipeOK) GetPayload() *rest_models.DtaserviceTransformDocumentReply {
+func (o *TransformPipeOK) GetPayload() *rest_models.DtaserviceTransformDocumentResponse {
 	return o.Payload
 }
 
 func (o *TransformPipeOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(rest_models.DtaserviceTransformDocumentReply)
+	o.Payload = new(rest_models.DtaserviceTransformDocumentResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

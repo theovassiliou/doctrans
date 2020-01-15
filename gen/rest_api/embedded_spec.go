@@ -30,32 +30,6 @@ func init() {
     "version": "version not set"
   },
   "paths": {
-    "/v1/document/transform-pipe": {
-      "post": {
-        "tags": [
-          "DTAServer"
-        ],
-        "operationId": "TransformPipe",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
-            }
-          }
-        }
-      }
-    },
     "/v1/dta/document/transform": {
       "post": {
         "tags": [
@@ -77,7 +51,33 @@ func init() {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/dta/document/transform-pipe": {
+      "post": {
+        "tags": [
+          "DTAServer"
+        ],
+        "operationId": "TransformPipe",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
           }
         }
@@ -134,7 +134,7 @@ func init() {
         }
       }
     },
-    "dtaserviceTransformDocumentReply": {
+    "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
       "properties": {
@@ -182,32 +182,6 @@ func init() {
     "version": "version not set"
   },
   "paths": {
-    "/v1/document/transform-pipe": {
-      "post": {
-        "tags": [
-          "DTAServer"
-        ],
-        "operationId": "TransformPipe",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
-            }
-          }
-        }
-      }
-    },
     "/v1/dta/document/transform": {
       "post": {
         "tags": [
@@ -229,7 +203,33 @@ func init() {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentReply"
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/dta/document/transform-pipe": {
+      "post": {
+        "tags": [
+          "DTAServer"
+        ],
+        "operationId": "TransformPipe",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformPipeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
           }
         }
@@ -286,7 +286,7 @@ func init() {
         }
       }
     },
-    "dtaserviceTransformDocumentReply": {
+    "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
       "properties": {

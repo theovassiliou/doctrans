@@ -45,6 +45,9 @@ Currently the project provides implementations for the following elements
 - [Echo](services/qds_echo/README.md)
   Just echoing the provided document
 
+- [Html2text](services/qds_echo/README.md)
+  Extracts from a HTML document the text in markdown form. Preserves table structures. 
+
 ## Installation of Implementations
 
 Installation is pretty straight forward if you have a working golang environment.
@@ -71,7 +74,7 @@ and in another terminal on the same host
 go run clients/client.go test/testDoc.txt
 ```
 
-`client` sends the file `testDoc.txt` to the echo server which has been started before. Addressing is hardcoded via the default parameters.
+`client` sends the file `testDoc.txt` to the *echo* server which has been started before. Addressing is hardcoded via the default parameters.
 
 If you start in a third terminal on the same host an additional server with
 

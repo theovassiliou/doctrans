@@ -31,9 +31,9 @@ import (
 
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
-	"github.com/theovassiliou/doctrans/rest_models"
-	apiclient "github.com/theovassiliou/doctrans/rest_client"
-	"github.com/theovassiliou/doctrans/rest_client/d_t_a_server"
+	"github.com/theovassiliou/doctrans/gen/rest_models"
+	apiclient "github.com/theovassiliou/doctrans/gen/rest_client"
+	"github.com/theovassiliou/doctrans/gen/rest_client/d_t_a_server"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)

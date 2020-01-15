@@ -19,7 +19,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/theovassiliou/doctrans/rest_api/operations/d_t_a_server"
+	"github.com/theovassiliou/doctrans/gen/rest_api/operations/d_t_a_server"
 )
 
 // NewDtaserviceProtoAPI creates a new DtaserviceProto instance

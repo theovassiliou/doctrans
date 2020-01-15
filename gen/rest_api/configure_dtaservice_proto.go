@@ -10,11 +10,11 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/theovassiliou/doctrans/rest_api/operations"
-	"github.com/theovassiliou/doctrans/rest_api/operations/d_t_a_server"
+	"github.com/theovassiliou/doctrans/gen/rest_api/operations"
+	"github.com/theovassiliou/doctrans/gen/rest_api/operations/d_t_a_server"
 )
 
-//go:generate swagger generate server --target ../../doctrans --name DtaserviceProto --spec ../swagger/dtaservice.swagger.json --model-package rest_models --server-package rest_api --client-package rest_api
+//go:generate swagger generate server --target ../../../doctrans --name DtaserviceProto --spec ../../swagger/dtaservice.swagger.json --model-package gen/rest_models --server-package gen/rest_api --client-package gen/rest_client
 
 func configureFlags(api *operations.DtaserviceProtoAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

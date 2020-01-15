@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	rest_models "github.com/theovassiliou/doctrans/rest_models"
+	rest_models "github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
 // ListServicesOKCode is the HTTP code returned for type ListServicesOK

@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	rest_models "github.com/theovassiliou/doctrans/rest_models"
+	rest_models "github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
 // TransformPipeReader is a Reader for the TransformPipe structure.

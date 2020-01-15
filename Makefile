@@ -1,4 +1,4 @@
-build: dtaservice/dtaservice.pb.go swagger/index.html dtaservice/dtaservice.validator.pb.go rest_client/dtaservice_proto_client.go rest_api/configure_dtaservice_proto.go
+build: dtaservice/dtaservice.pb.go swagger/index.html dtaservice/dtaservice.validator.pb.go gen/rest_client/dtaservice_proto_client.go gen/rest_api/configure_dtaservice_proto.go
 	go build ./...
 
 
@@ -22,8 +22,8 @@ dtaservice/dtaservice.pb.go dtaservice/dtaservice.validator.pb.go: dtaservice/dt
 	dtaservice.proto 
 
 
-rest_client/dtaservice_proto_client.go: swagger/dtaservice.swagger.json
-	swagger generate client -c rest_client -s rest_api -m rest_models -f swagger/dtaservice.swagger.json
+gen/rest_client/dtaservice_proto_client.go: swagger/dtaservice.swagger.json
+	swagger generate client -c gen/rest_client -s gen/rest_api -m gen/rest_models -f swagger/dtaservice.swagger.json
 
-rest_api/configure_dtaservice_proto.go: swagger/dtaservice.swagger.json
-	swagger generate server -c rest_client -s rest_api -m rest_models -f swagger/dtaservice.swagger.json
+gen/rest_api/configure_dtaservice_proto.go: swagger/dtaservice.swagger.json
+	swagger generate server -c gen/rest_client -s gen/rest_api -m gen/rest_models -f swagger/dtaservice.swagger.json

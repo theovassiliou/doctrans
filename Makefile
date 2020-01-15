@@ -1,8 +1,25 @@
+servers := "./services/qds_count" "./services/qds_echo" "./services/qds_html2text" "./services/rest_html2text" 
+
+files := $(subst ./services/,,$(servers))
+
 build: dtaservice/dtaservice.pb.go swagger/index.html dtaservice/dtaservice.validator.pb.go gen/rest_client/dtaservice_proto_client.go gen/rest_api/configure_dtaservice_proto.go
 	go build ./...
 
 
 .PHONY: gateway 
+
+all: $(servers)
+
+$(servers):
+	go build $@
+
+clean: 
+ifneq ($(files),)
+	rm -f $(files)
+endif
+	
+
+print-%  : ; @echo $* = $($*)
 
 gateway: 
 	go run gateway/gateway.go

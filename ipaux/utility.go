@@ -47,6 +47,7 @@ func ExternalIP() (string, error) {
 	return "", errors.New("are you connected to the network?")
 }
 
+// GetHostname retrieves the hostname as a string. Returns empty string in case of problems.
 func GetHostname() string {
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -56,6 +57,7 @@ func GetHostname() string {
 	return hostname
 }
 
+// GetIPAdress determines the external IP adress in use, or empty string in case of problems.
 func GetIPAdress() string {
 	ipAddress, err := aux.ExternalIP()
 	if err != nil {

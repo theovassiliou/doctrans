@@ -31,9 +31,9 @@ import (
 
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
-	"github.com/theovassiliou/doctrans/models"
-	apiclient "github.com/theovassiliou/doctrans/restClient"
-	"github.com/theovassiliou/doctrans/restClient/d_t_a_server"
+	"github.com/theovassiliou/doctrans/rest_models"
+	apiclient "github.com/theovassiliou/doctrans/rest_client"
+	"github.com/theovassiliou/doctrans/rest_client/d_t_a_server"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -75,7 +75,7 @@ func main() {
 	params := d_t_a_server.NewTransformDocumentParams()
 	_, fileContent := readFile(conf.FileName)
 
-	params.SetBody(&models.DtaserviceDocumentRequest{
+	params.SetBody(&rest_models.DtaserviceDocumentRequest{
 		Document: fileContent,
 		FileName: "conf.FileName",
 	})

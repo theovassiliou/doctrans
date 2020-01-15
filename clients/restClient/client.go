@@ -31,9 +31,9 @@ import (
 
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
-	"github.com/theovassiliou/doctrans/gen/rest_models"
 	apiclient "github.com/theovassiliou/doctrans/gen/rest_client"
 	"github.com/theovassiliou/doctrans/gen/rest_client/d_t_a_server"
+	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -48,6 +48,7 @@ var conf = config{
 type config struct {
 	FileName string    `help:"file name of the file to be translated"`
 	LogLevel log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Port     string    `help:"Port to be used"`
 }
 
 func check(e error) {
@@ -58,7 +59,10 @@ func check(e error) {
 
 func main() {
 
-	conf = config{}
+	conf = config{
+		Port:     "3000",
+		LogLevel: log.TraceLevel,
+	}
 
 	//parse config
 	opts.New(&conf).
@@ -77,15 +81,21 @@ func main() {
 
 	params.SetBody(&rest_models.DtaserviceDocumentRequest{
 		Document: fileContent,
-		FileName: "conf.FileName",
+		FileName: "c://file/hallo\\conf.FileName",
 	})
-	resp, err := apiclient.Default.DtaServer.TransformDocument(params)
+	transConf := apiclient.DefaultTransportConfig()
+	transConf.Host = transConf.Host + ":" + conf.Port
+
+	client := apiclient.NewHTTPClientWithConfig(nil, transConf)
+
+	resp, err := client.DtaServer.TransformDocument(params)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	doc := string(resp.GetPayload().TransDocument)
 	fmt.Printf("%s\n", doc)
+	fmt.Printf("%v\n", resp.GetPayload().TransOutput)
 }
 
 func readFile(path string) (int, []byte) {

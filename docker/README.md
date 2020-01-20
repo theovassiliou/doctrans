@@ -26,5 +26,5 @@ CMD ["/qds_count"]
 For executing the above image you could use
 
 ```shell
- docker run -p 50051:50051 -d -it qds_count
+    docker run -p <exposedPort>:<hostPort> -d -it <container_name>
 ```

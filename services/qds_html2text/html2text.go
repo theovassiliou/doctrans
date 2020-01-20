@@ -30,6 +30,7 @@ func Work(input []byte, options []string) (string, []string, error) {
 	return string(text), []string{}, err
 }
 
+// DtaService holds the infrastructure for performing the service.
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
 	srvHandler *pb.DocTransServer
@@ -40,44 +41,41 @@ func main() {
 	workingHomeDir, _ := homedir.Dir()
 
 	dts := &pb.DocTransServer{
-		RegistrarURL: "http://127.0.0.1:8761/eureka",
-		AppName:      appName,
-		PortToListen: "50051",
-		HTTPPort:     "80",
-		CfgFile:      workingHomeDir + "/.dta/" + appName + "/config.json",
-		LogLevel:     log.WarnLevel,
+		AppName:  appName,
+		CfgFile:  workingHomeDir + "/.dta/" + appName + "/config.json",
+		LogLevel: log.WarnLevel,
 	}
 
 	// (1) SetUp Configuration
-	pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+
+	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
 
 	// init the resolver so that we have access to the list of apps
-	gateway := &DtaService{
+	service := &DtaService{
 		srvHandler: dts,
-		resolver: eureka.NewClient([]string{
-			dts.RegistrarURL,
-			// add others servers here
-		}),
 	}
 
 	// (2) Init and register GRPC Service
-	lis := pb.GrpcLisInitAndReg(gateway.srvHandler)
+	lis := pb.GrpcLisInitAndReg(service.srvHandler)
 
-	go pb.StartGrpcServer(lis, gateway)
+	// In case of a service the resolver is the registry. Might be nil in case no registration was configured
+	service.resolver = service.srvHandler.Registrar()
+
+	go pb.StartGrpcServer(lis, service)
 
 	// Start dta service by using the listener
 
 	if dts.REST {
 		//(3) Let's instanciate the the HTTP Server
-		qdsservices.CaptureSignals(gateway.srvHandler)
+		qdsservices.CaptureSignals(service.srvHandler)
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		pb.MuxHttpGrpc(ctx, dts.HTTPPort, gateway.srvHandler)
+		pb.MuxHTTPGrpc(ctx, dts.HTTPPort, service.srvHandler)
 	} else {
 		signalCh := make(chan os.Signal)
 		signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-		qdsservices.HandleSignals(gateway.srvHandler, signalCh)
+		qdsservices.HandleSignals(service.srvHandler, signalCh)
 	}
 	return
 }
@@ -99,6 +97,7 @@ func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentR
 	}, nil
 }
 
+// ListServices list available services provided by this implementation
 func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", s.ApplicationName())
@@ -108,6 +107,7 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 }
 
+// ApplicationName returns the name of the service application
 func (s *DtaService) ApplicationName() string {
 	return appName
 }

@@ -46,7 +46,7 @@ func (dtas *DocTransServer) NewConfigFile() error {
 	return nil
 }
 
-func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) {
+func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) *DocTransServer {
 	opts.New(config).
 		Repo("github.com/theovassiliou/doctrans").
 		Version(version).
@@ -80,7 +80,7 @@ func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) 
 	if config.LogLevel != 0 {
 		log.SetLevel(config.LogLevel)
 	}
-
+	return config
 }
 
 // NewDocTransFromReader creates a Client configured from a given reader.

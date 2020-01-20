@@ -46,6 +46,7 @@ type DocTransServer struct {
 	heartBeatJob *scheduler.Job
 }
 
+//CreateListener creates the grpc listener and returns it
 func (dtas *DocTransServer) CreateListener(maxPortSeek int) net.Listener {
 	var lis net.Listener
 	var err error
@@ -81,6 +82,7 @@ func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRe
 	return &ListServicesResponse{Services: services}, nil
 }
 
+// ApplicationName returns the application name of the service
 func (dtas *DocTransServer) ApplicationName() string {
 	return appName
 }
@@ -91,7 +93,6 @@ func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
 	_configuredPort := srvHandler.PortToListen
-
 	lis := srvHandler.CreateListener(maxPortSeek) // for the service
 
 	if _configuredPort != srvHandler.PortToListen {
@@ -100,11 +101,13 @@ func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
 
 	// We register ourselfs by using the dyn.port
 	if srvHandler.Register {
-		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, aux.GetIPAdress(), srvHandler.PortToListen, "Gateway", srvHandler.TTL, srvHandler.IsSSL)
+		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, aux.GetIPAdress(), srvHandler.PortToListen, srvHandler.DtaType, srvHandler.TTL, srvHandler.IsSSL)
 	}
+
 	return lis
 }
 
+// StartGrpcServer starts the server for a given listener
 func StartGrpcServer(lis net.Listener, dtaServer DTAServerServer) {
 	s := grpc.NewServer()
 	RegisterDTAServerServer(s, dtaServer)
@@ -113,7 +116,8 @@ func StartGrpcServer(lis net.Listener, dtaServer DTAServerServer) {
 	}
 }
 
-func MuxHttpGrpc(ctx context.Context, HTTPPort string, srvHandler *DocTransServer) {
+// MuxHTTPGrpc starts the HTTP server in a given context
+func MuxHTTPGrpc(ctx context.Context, HTTPPort string, srvHandler *DocTransServer) {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	grpcPort := srvHandler.PortToListen

@@ -52,3 +52,8 @@ func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, d
 	// FIXME:0 We have somehow be able to deregister the heartbeat
 	dtas.heartBeatJob, _ = scheduler.Every(25).Seconds().NotImmediately().Run(job)
 }
+
+// Registrar returns the Eureka intance where the server has registered.
+func (dtas *DocTransServer) Registrar() *eureka.Client {
+	return dtas.registrar
+}

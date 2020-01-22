@@ -2,3 +2,11 @@ docker/Dockerfile.gateway
 docker/gateway
 .env
 .DS_Store
+docker/Dockerfile.qds_count
+docker/Dockerfile.qds_echo
+docker/Dockerfile.qds_html2text
+docker/Dockerfile.rest_html2text
+docker/qds_count
+docker/qds_echo
+docker/qds_html2text
+docker/rest_html2text

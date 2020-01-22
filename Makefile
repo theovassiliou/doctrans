@@ -35,6 +35,15 @@ $(dockerexes):
 	echo "CMD [\"/$(subst ./docker/,,$@)\"]" >> docker/Dockerfile.$(subst ./docker/,,$@) ; \
 	docker build -t $(subst ./docker/,,$@) -f docker/Dockerfile.$(subst ./docker/,,$@) . 
 
+./docker/gateway: 
+	rm -rf docker/Dockerfile.gateway; \
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./docker/gateway ./gateway ; \
+	echo "FROM scratch" >> docker/Dockerfile.gateway ; \
+	echo "EXPOSE 50051" >> docker/Dockerfile.gateway ; \
+	echo "ADD \"./docker/gateway\" "/ >> docker/Dockerfile.gateway ; \
+	echo "CMD [\"/gateway\"]" >> docker/Dockerfile.gateway ; 
+
+
 clean: 
 ifneq ($(gofiles),)
 	rm -f $(gofiles)
@@ -46,11 +55,12 @@ ifneq ($(dockerfiles),)
 	rm -f $(dockerfiles)
 endif
 	rm -rf bin/
+	rm -rf docker/gateway
 
 print-%  : ; @echo $* = $($*)
 
 gateway: 
-	go run gateway/gateway.go -l trace
+	go build -o bin/gateway ./gateway/
 
 swagger/index.html: swagger/dtaservice.swagger.json
 	swagger-codegen generate -o swagger -i swagger/dtaservice.swagger.json -l html

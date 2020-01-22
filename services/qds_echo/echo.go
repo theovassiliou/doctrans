@@ -45,6 +45,9 @@ func main() {
 
 	// (1) SetUp Configuration
 	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+	if dts.AppName == "" {
+		dts.AppName = appName
+	}
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &DtaService{

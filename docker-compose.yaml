@@ -2,13 +2,15 @@ version: '3'
 services:
   eureka:
      image: aista/eureka
-     container_name: eureka
+     container_name: eureka-intern
      restart: always
      ports:
-      - "8761:8761"
+      - "9761:8761"
   dta_gw:
     depends_on: 
-      - eureka
+    - eureka
+    env_file: 
+      - .env
     container_name: dta_gw
     restart: always
     build:
@@ -19,14 +21,29 @@ services:
     - -l
     - trace
     - -a
-    - DE.TU-BERLIN.QDS.GATEWAY
+    - DE.TU-BERLIN.QDS.GW-internal
     - -p
     - "50051"
     - -h
-    - dta_gw
+    - "$HOST"
+    - -r
+    - --registrar-url
+    - http://$HOST:8761/eureka
+    ports:
+      - "50051:50051"
+  dta_html2text:
+    depends_on: 
+      - eureka
+    container_name: dta_html2text
+    restart: always
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile.qds_html2text
+    entrypoint:
+    - /qds_html2text
+    - -l
+    - trace
     - -r
     - --registrar-url
     - http://eureka:8761/eureka
-    ports:
-      - "50051:50051"
-  
+      

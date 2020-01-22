@@ -53,7 +53,7 @@ type config struct {
 	FileName       string    `type:"arg" name:"file" help:" the file to be uploaded"`
 	EurekaURL      string    `help:"if set the indicated eureka server will be used to find DTA-GW"`
 	ServiceName    string    `help:"The service to be used"`
-	GatewayAddress string    `help:"Address and port of the server to connect"`
+	ServiceAddress string    `help:"Address and port of the server to connect"`
 	ListServices   bool      `help:"List all the services accessible"`
 	LogLevel       log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
@@ -64,14 +64,13 @@ func check(e error) {
 	}
 }
 
-const dtaGwID = "DE.TU-BERLIN.QDS.DTA.DTA-GW"
+const dtaGwID = "DE.TU-BERLIN.QDS.GW-INTERNAL"
 
 func main() {
 
 	conf = config{
-		GatewayAddress: "127.0.0.1:50051",
-		ServiceName:    "DE.TU-BERLIN.QDS.DTA.COUNT",
-		EurekaURL:      "http://eureka:8761/eureka",
+		ServiceName: "DE.TU-BERLIN.QDS.HTML2TEXT",
+		EurekaURL:   "http://localhost:8761/eureka",
 	}
 
 	//parse config
@@ -83,27 +82,49 @@ func main() {
 	log.SetLevel(conf.LogLevel)
 
 	// Set up a connection to the server.
-	log.WithFields(log.Fields{"Service": "client", "Status": "main"}).Infof("Requesting service %s", conf.ServiceName)
+	log.Infof("Requesting service %s", conf.ServiceName)
 
-	if conf.EurekaURL != "" && conf.GatewayAddress == "" {
-		log.WithFields(log.Fields{"Service": "eureka", "Status": "main"}).Infof("   via  Eureka service at %s", conf.EurekaURL)
+	// We have to identify the server to contact
+	// We have to possibilities
+	//  a) via registry (the normal case)
+	//  b) direct, more for testing purposes
+
+	// 	a) via resolver is assumed if no server is given
+	//  - contact the well-known resolver
+	if conf.ServiceAddress == "" {
+		log.Infof("Will contact registry at %s\n", conf.EurekaURL)
 
 		client := eureka.NewClient([]string{
 			conf.EurekaURL, //From a spring boot based eureka server
 			// add others servers here
 		})
 
-		// Let's find out whether we find the server that can serve this service.
-		gw, err := client.GetApplication(dtaGwID)
-		if err != nil || len(gw.Instances) <= 0 {
-			log.WithFields(log.Fields{"Service": "client", "Status": "main"}).Errorf("Couldn't find server for app %s", dtaGwID)
+		// Let's find out whether we find the server serving this service.
+		//  - ask for the service
+		eService, err := client.GetApplication(conf.ServiceName)
+		if err != nil || len(eService.Instances) <= 0 {
+			log.Infof("Could not find the service %s at eureka\n", conf.ServiceName)
 		} else {
-			conf.GatewayAddress = gw.Instances[0].IpAddr + ":" + gw.Instances[0].Port.Port
+			conf.ServiceAddress = eService.Instances[0].IpAddr + ":" + eService.Instances[0].Port.Port
+		}
+		//  - if service is unknown ask for a gateway
+		if conf.ServiceAddress == "" {
+			log.Infof("Looking for a gateway %s \n", dtaGwID)
+
+			gService, err := client.GetApplication(dtaGwID)
+			if err != nil || len(gService.Instances) <= 0 {
+				log.Infof("Could not find a gateway %s at eureka\n", dtaGwID)
+			} else {
+				conf.ServiceAddress = gService.Instances[0].IpAddr + ":" + gService.Instances[0].Port.Port
+				log.Infof("Found one at %s \n", conf.ServiceAddress)
+			}
 		}
 	}
-	log.WithFields(log.Fields{"Service": "client", "Status": "main"}).Infof("Contacting server %s", conf.GatewayAddress)
+	log.Infof("Will contact %s for service for service %s\n", conf.ServiceAddress, conf.ServiceName)
 
-	conn, err := grpc.Dial(conf.GatewayAddress, grpc.WithInsecure())
+	//  - contact identified server
+
+	conn, err := grpc.Dial(conf.ServiceAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

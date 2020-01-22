@@ -30,7 +30,7 @@ func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, d
 		dtas.RegistrarURL,
 		// add others servers here
 	})
-
+	dtas.registrar.CheckRetry = eureka.ExpBackOffCheckRetry
 	// Create the app instance
 	dtas.instanceInfo = eureka.NewInstanceInfo(hostname, app, ipAddress, port, ttl, isSsl) //Create a new instance to register
 	// Add some meta data. Currently no meaning
@@ -41,10 +41,10 @@ func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, d
 	dtas.instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
 	// Register instance and heartbeat for Eureka
 	dtas.registrar.RegisterInstance(app, dtas.instanceInfo) // Register new instance in your eureka(s)
-	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s", app)
+	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s\n", app)
 
 	job := func() {
-		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Trace("sending heartbeat : ", time.Now().UTC())
+		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Trace("sending heartbeat : %v\n", time.Now().UTC())
 		dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
 	}
 

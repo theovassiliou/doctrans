@@ -16,11 +16,11 @@ func newDefaultDTS() *DocTransServer {
 	return &DocTransServer{
 		Register:     false,
 		REST:         true,
-		HTTPPort:     defaultOrNot("80", os.Getenv("DTS_HTTPPort")),
-		HostName:     defaultOrNot(aux.GetHostname(), os.Getenv("DTS_HostName")),
-		AppName:      defaultOrNot("", os.Getenv("DTS_AppName")),
-		PortToListen: defaultOrNot("50051", os.Getenv("DTS_PortToListen")),
-		RegistrarURL: defaultOrNot("http://127.0.0.1:8761/eureka", os.Getenv("DTS_RegistrarURL")),
+		HTTPPort:     DefaultOrNot("80", os.Getenv("DTS_HTTPPort")),
+		HostName:     DefaultOrNot(aux.GetHostname(), os.Getenv("DTS_HostName")),
+		AppName:      DefaultOrNot("", os.Getenv("DTS_AppName")),
+		PortToListen: DefaultOrNot("50051", os.Getenv("DTS_PortToListen")),
+		RegistrarURL: DefaultOrNot("http://127.0.0.1:8761/eureka", os.Getenv("DTS_RegistrarURL")),
 		DtaType:      "Service",
 		LogLevel:     log.WarnLevel,
 	}
@@ -117,7 +117,7 @@ func NewDocTransFromFile(fpath string) (*DocTransServer, error) {
 	return NewDocTransFromReader(fi)
 }
 
-func defaultOrNot(d, v string) string {
+func DefaultOrNot(d, v string) string {
 	if v == "" {
 		return d
 	}

@@ -1,0 +1,32 @@
+version: '3'
+services:
+  eureka:
+     image: aista/eureka
+     container_name: eureka
+     restart: always
+     ports:
+      - "8761:8761"
+  dta_gw:
+    depends_on: 
+      - eureka
+    container_name: dta_gw
+    restart: always
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile.gateway
+    entrypoint:
+    - /gateway
+    - -l
+    - trace
+    - -a
+    - DE.TU-BERLIN.QDS.GATEWAY
+    - -p
+    - "50051"
+    - -h
+    - dta_gw
+    - -r
+    - --registrar-url
+    - http://eureka:8761/eureka
+    ports:
+      - "50051:50051"
+  

@@ -13,7 +13,9 @@ import (
 	"google.golang.org/grpc"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/theovassiliou/doctrans/dtaservice"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 	"github.com/theovassiliou/doctrans/qdsservices"
 )
 
@@ -38,16 +40,22 @@ func main() {
 
 	// Take the build in defaults as configuration.
 	// Basically this is required to print out something in case of --help
+	// FIXME this settings are not beeing preserved. Somehow overwritten by loading the config file
 	dts := &pb.DocTransServer{
-		AppName:  appName,
-		CfgFile:  workingHomeDir + "/.dta/" + appName + "/config.json",
-		LogLevel: log.WarnLevel,
-		DtaType:  "Gateway",
+		AppName:     appName,
+		CfgFile:     workingHomeDir + "/.dta/" + appName + "/config.json",
+		LogLevel:    log.WarnLevel,
+		DtaType:     "Gateway",
+		ResolverURL: "http://eureka:8761/eureka",
 	}
 
 	// (1) SetUp Configuration
 	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
 	dts.DtaType = "Gateway"
+	dts.ResolverURL = "http://eureka:8761/eureka"
+	if dts.AppName == "" {
+		dts.AppName = appName
+	}
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &Gateway{
@@ -55,10 +63,20 @@ func main() {
 	}
 
 	// (2) Init and register GRPC Service
-	lis := pb.GrpcLisInitAndReg(gateway.dts)
+	lis := pb.GrpcLisInit(gateway.dts)
+
+	if gateway.dts.Register {
+		ip, _ := aux.ExternalIP()
+		gateway.dts.RegisterAtRegistry(gateway.dts.HostName, gateway.dts.AppName, dtaservice.DefaultOrNot(ip, os.Getenv("IP")), gateway.dts.PortToListen, gateway.dts.DtaType, gateway.dts.TTL, gateway.dts.IsSSL)
+	}
 
 	// In case of a service the resolver is the registry. Might be nil in case no registration was configured
-	gateway.resolver = gateway.dts.Registrar()
+
+	// Build Eureka Configuration
+	gateway.resolver = eureka.NewClient([]string{
+		dts.ResolverURL,
+		// add others servers here
+	})
 
 	go pb.StartGrpcServer(lis, gateway)
 

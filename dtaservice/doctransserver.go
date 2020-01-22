@@ -29,6 +29,12 @@ type DocTransServer struct {
 	RegistrarPWD  string `opts:"group=Registrar" help:"Registry User Password, no password used if not provided"`
 	TTL           uint   `opts:"group=Registrar" help:"Time in seconds to reregister at Registrar."`
 
+	ResolverURL          string `opts:"group=Resolver" help:"Resolver URL"`
+	ResolverUser         string `opts:"group=Resolver" help:"Resolver User, no user used if not provided"`
+	ResolverPWD          string `opts:"group=Resolver" help:"Resolver User Password, no password used if not provided"`
+	ResolverTTL          uint   `opts:"group=Resolver" help:"Time in seconds to reregister at Resolver."`
+	ResolverRegistration bool   `opts:"group=Resolver" help:"Register in addition also to the resolver"`
+
 	HostName     string `opts:"group=Service" help:"If provided will be used as hostname, else automatically derived."`
 	AppName      string `opts:"group=Service" help:"ID of the service"`
 	PortToListen string `opts:"group=Service" help:"On which port to listen for this service."`
@@ -90,6 +96,16 @@ func (dtas *DocTransServer) ApplicationName() string {
 // GrpcLisInitAndReg initialises a listener for the GRPC server and registers the grps services
 // Returns the listeners and the port on which the GRPC server listens
 func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
+	lis := GrpcLisInit(srvHandler)
+	// We register ourselfs by using the dyn.port
+	if srvHandler.Register {
+		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, aux.GetIPAdress(), srvHandler.PortToListen, srvHandler.DtaType, srvHandler.TTL, srvHandler.IsSSL)
+	}
+
+	return lis
+}
+
+func GrpcLisInit(srvHandler *DocTransServer) net.Listener {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
 	_configuredPort := srvHandler.PortToListen
@@ -98,12 +114,6 @@ func GrpcLisInitAndReg(srvHandler *DocTransServer) net.Listener {
 	if _configuredPort != srvHandler.PortToListen {
 		log.Warnf("Listing on port %v instead on configured, but used port %v\n", srvHandler.PortToListen, _configuredPort)
 	}
-
-	// We register ourselfs by using the dyn.port
-	if srvHandler.Register {
-		srvHandler.RegisterAtRegistry(srvHandler.HostName, srvHandler.AppName, aux.GetIPAdress(), srvHandler.PortToListen, srvHandler.DtaType, srvHandler.TTL, srvHandler.IsSSL)
-	}
-
 	return lis
 }
 

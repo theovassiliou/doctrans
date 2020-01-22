@@ -1,2 +1,4 @@
 docker/Dockerfile.gateway
 docker/gateway
+.env
+.DS_Store

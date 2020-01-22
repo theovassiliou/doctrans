@@ -42,10 +42,12 @@ func main() {
 		AppName:  appName,
 		CfgFile:  workingHomeDir + "/.dta/" + appName + "/config.json",
 		LogLevel: log.WarnLevel,
+		DtaType:  "Gateway",
 	}
 
 	// (1) SetUp Configuration
-	pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+	dts.DtaType = "Gateway"
 
 	// init the resolver so that we have access to the list of apps
 	gateway := &Gateway{

@@ -140,6 +140,7 @@ func MuxHTTPGrpc(ctx context.Context, HTTPPort string, srvHandler *DocTransServe
 	// (4) Start HTTP Server
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
 	log.WithFields(log.Fields{"Service": "HTTP", "Status": "Running"}).Debugf("Starting HTTP server on: %v", HTTPPort)
+	// FIXME implement a fall back if port is in use.
 	if err := http.ListenAndServe(":"+HTTPPort, mux); err != nil {
 		log.WithFields(log.Fields{"Service": "HTTP", "Status": "Abort"}).Fatalf("failed to serve: %v", err)
 	}

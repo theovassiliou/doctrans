@@ -19,6 +19,8 @@ var version = ".1"
 // VERSION is the current version number.
 var VERSION = "0.0" + version + "-src"
 
+// TODO Splitt APP Name into appName (ECHO) and scope (DE.TU-BERLIN.QDS) so that it
+// can be configured individual
 const (
 	appName = "DE.TU-BERLIN.QDS.ECHO"
 )
@@ -110,5 +112,5 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 }
 
 func (s *DtaService) ApplicationName() string {
-	return appName
+	return s.srvHandler.AppName
 }

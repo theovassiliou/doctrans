@@ -111,5 +111,5 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 // ApplicationName returns the name of the service application
 func (s *DtaService) ApplicationName() string {
-	return appName
+	return s.srvHandler.AppName
 }

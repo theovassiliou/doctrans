@@ -15,7 +15,7 @@ import (
 func newDefaultDTS() *DocTransServer {
 	return &DocTransServer{
 		Register:     false,
-		REST:         true,
+		REST:         false,
 		HTTPPort:     DefaultOrNot("80", os.Getenv("DTS_HTTPPort")),
 		HostName:     DefaultOrNot(aux.GetHostname(), os.Getenv("DTS_HostName")),
 		AppName:      DefaultOrNot("", os.Getenv("DTS_AppName")),
@@ -70,10 +70,12 @@ func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) 
 	}
 
 	// Parse config file
-	config, err := NewDocTransFromFile(config.CfgFile)
+	configLoaded, err := NewDocTransFromFile(config.CfgFile)
+	log.Tracef("HALLO: %v", configLoaded)
 	if err != nil {
 		log.Infoln("No config file found. Consider creating one using --init option.")
 	}
+	config = configLoaded
 
 	// Parse command line parameters again to insist on config parameters
 	opts.New(config).Parse()

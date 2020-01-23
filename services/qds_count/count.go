@@ -75,7 +75,10 @@ func main() {
 	}
 
 	// (1) SetUp Configuration
-	pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
+	if dts.AppName == "" {
+		dts.AppName = appName
+	}
 
 	// init the resolver so that we have access to the list of apps
 	service := &DtaService{
@@ -156,5 +159,5 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 // ApplicationName returns the name of the service application
 func (s *DtaService) ApplicationName() string {
-	return appName
+	return s.srvHandler.AppName
 }

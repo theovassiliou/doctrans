@@ -1,6 +1,7 @@
 servers := "./services/qds_count" "./services/qds_echo" "./services/qds_html2text" "./services/rest_html2text" 
 clients := "./clients/grpcClient" "./clients/restClient"
 
+servers_install := $(servers)-install
 
 gofiles := $(subst ./services/,,$(servers))
 dockerexes := $(subst ./services/,./docker/,$(servers))
@@ -19,11 +20,12 @@ clients: $(clients)
 
 docker: $(dockerexes)
 
+
 $(servers):
-	go build -o bin/$(subst ./services/,,$@) $@
+	go install $@
 
 $(clients):
-	go build -o bin/$(subst ,,$@) $@
+	go install $@
 
 
 $(dockerexes):

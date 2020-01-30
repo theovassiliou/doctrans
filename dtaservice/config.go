@@ -71,7 +71,6 @@ func SetupConfiguration(config *DocTransServer, workingHomeDir, version string) 
 
 	// Parse config file
 	configLoaded, err := NewDocTransFromFile(config.CfgFile)
-	log.Tracef("HALLO: %v", configLoaded)
 	if err != nil {
 		log.Infoln("No config file found. Consider creating one using --init option.")
 	}

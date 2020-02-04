@@ -11,8 +11,9 @@ While we tried to keep the scripts as generic as possible, their goals for us wa
 Our universe (as seen in the above sketch) consists of services that can live in a global scope and service that can liven in a local scope.  
 The services in each scope can be addressed via the scopes registry. In our case an EUREKA server (E).
 
-Services (SRV1 .. SRVn) in each scope are prefixed with the scope name, e.g. `DE.TU-BERLIN.QDS`. The global scope's prefix is `<empty>`.
+Services (SRV1 .. SRVn) in each scope share the same prefix in scope name, e.g. `DE.TU-BERLIN.QDS`. The global scope's prefix is `<empty>`.
 
+While a service name should not has a *dot* (*.*) in it's name, by using it as part of the name, it creates implicitely a *system* scope. 
 In the following we assume that our *universe*
 
 - lives on a single machine,
@@ -40,7 +41,7 @@ To create a usable global scope environment you could try
 
 ```shell
 $> cd $(PRJHOME)/
-$> scenarios/global/eureka.sh && scenarios/global/qds_all.sh &
+$> scenarios/global/eureka.sh && scenarios/global/all_services.sh &
 $> go run client/client.go
 ```
 

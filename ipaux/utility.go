@@ -6,7 +6,6 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	aux "github.com/theovassiliou/dta-server/ipaux"
 )
 
 // ExternalIP determines the external IP adress in use
@@ -59,7 +58,7 @@ func GetHostname() string {
 
 // GetIPAdress determines the external IP adress in use, or empty string in case of problems.
 func GetIPAdress() string {
-	ipAddress, err := aux.ExternalIP()
+	ipAddress, err := ExternalIP()
 	if err != nil {
 		log.Info("Unable to find IP address from OS")
 	}

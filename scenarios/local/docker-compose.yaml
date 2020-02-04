@@ -14,7 +14,7 @@ services:
     container_name: dta_gw
     restart: always
     build:
-      context: ./
+      context: ../../
       dockerfile: docker/Dockerfile.gateway
     entrypoint:
     - /gateway
@@ -37,8 +37,8 @@ services:
     container_name: dta_html2text
     restart: always
     build:
-      context: ./
-      dockerfile: docker/Dockerfile.qds_html2text
+      context: ../../
+      dockerfile: docker//Dockerfile.qds_html2text
     entrypoint:
     - /qds_html2text
     - -l
@@ -46,4 +46,34 @@ services:
     - -r
     - --registrar-url
     - http://eureka:8761/eureka
-      
+  dta_echo:
+    depends_on: 
+      - eureka
+    container_name: dta_echo
+    restart: always
+    build:
+      context: ../../
+      dockerfile: docker//Dockerfile.qds_echo
+    entrypoint:
+    - /qds_echo
+    - -l
+    - trace
+    - -r
+    - --registrar-url
+    - http://eureka:8761/eureka
+  dta_count:
+    depends_on: 
+      - eureka
+    container_name: dta_count
+    restart: always
+    build:
+      context: ../../
+      dockerfile: docker//Dockerfile.qds_count
+    entrypoint:
+    - /qds_count
+    - -l
+    - trace
+    - -r
+    - --registrar-url
+    - http://eureka:8761/eureka
+        

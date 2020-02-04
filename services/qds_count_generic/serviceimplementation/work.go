@@ -1,22 +1,24 @@
 package serviceimplementation
 
 import (
-	pb "github.com/theovassiliou/doctrans/dtaservice"
 	"bytes"
 	"context"
 	"encoding/json"
 	"io"
 	"regexp"
 
+	pb "github.com/theovassiliou/doctrans/dtaservice"
+
+	"github.com/theovassiliou/go-eureka-client/eureka"
+
 	log "github.com/sirupsen/logrus"
 )
 
-type DtaService struct {
+type Manager struct {
 	pb.UnimplementedDTAServerServer
-	srvHandler *pb.DocTransServer
-	resolver   *eureka.Client
+	SrvHandler *pb.DocTransServer
+	Registry   *eureka.Client
 }
-
 
 // countResults describes the results of the transformation
 type countResults struct {
@@ -68,7 +70,7 @@ func counter(r io.Reader, sep []byte) (int, error) {
 }
 
 // TransformDocument implements dtaservice.DTAServer
-func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
+func (s *Manager) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	l, sOut, sErr := Work(in.GetDocument(), in.GetOptions())
 	var errorS []string
 	if sErr != nil {
@@ -86,11 +88,17 @@ func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentReque
 }
 
 // ListServices list available services provided by this implementation
-func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
+func (s *Manager) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", s.ApplicationName())
 	services := (&pb.ListServicesResponse{}).Services
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
 
+}
+
+// ApplicationName returns the name of the service application
+func (s *Manager) ApplicationName() string {
+	// return serviceName
+	return ""
 }

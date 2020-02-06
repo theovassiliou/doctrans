@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/theovassiliou/doctrans/gen/rest_api/operations/d_t_a_server"
@@ -41,11 +41,13 @@ func NewDtaserviceProtoAPI(spec *loads.Document) *DtaserviceProtoAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		DtaServerListServicesHandler: d_t_a_server.ListServicesHandlerFunc(func(params d_t_a_server.ListServicesParams) middleware.Responder {
-			return middleware.NotImplemented("operation DtaServerListServices has not yet been implemented")
-		}), DtaServerTransformDocumentHandler: d_t_a_server.TransformDocumentHandlerFunc(func(params d_t_a_server.TransformDocumentParams) middleware.Responder {
-			return middleware.NotImplemented("operation DtaServerTransformDocument has not yet been implemented")
-		}), DtaServerTransformPipeHandler: d_t_a_server.TransformPipeHandlerFunc(func(params d_t_a_server.TransformPipeParams) middleware.Responder {
-			return middleware.NotImplemented("operation DtaServerTransformPipe has not yet been implemented")
+			return middleware.NotImplemented("operation d_t_a_server.ListServices has not yet been implemented")
+		}),
+		DtaServerTransformDocumentHandler: d_t_a_server.TransformDocumentHandlerFunc(func(params d_t_a_server.TransformDocumentParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.TransformDocument has not yet been implemented")
+		}),
+		DtaServerTransformPipeHandler: d_t_a_server.TransformPipeHandlerFunc(func(params d_t_a_server.TransformPipeParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.TransformPipe has not yet been implemented")
 		}),
 	}
 }
@@ -84,7 +86,6 @@ type DtaserviceProtoAPI struct {
 	DtaServerTransformDocumentHandler d_t_a_server.TransformDocumentHandler
 	// DtaServerTransformPipeHandler sets the operation handler for the transform pipe operation
 	DtaServerTransformPipeHandler d_t_a_server.TransformPipeHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -152,15 +153,15 @@ func (o *DtaserviceProtoAPI) Validate() error {
 	}
 
 	if o.DtaServerListServicesHandler == nil {
-		unregistered = append(unregistered, "d_t_a_server.ListServicesHandler")
+		unregistered = append(unregistered, "DtaServer.ListServicesHandler")
 	}
 
 	if o.DtaServerTransformDocumentHandler == nil {
-		unregistered = append(unregistered, "d_t_a_server.TransformDocumentHandler")
+		unregistered = append(unregistered, "DtaServer.TransformDocumentHandler")
 	}
 
 	if o.DtaServerTransformPipeHandler == nil {
-		unregistered = append(unregistered, "d_t_a_server.TransformPipeHandler")
+		unregistered = append(unregistered, "DtaServer.TransformPipeHandler")
 	}
 
 	if len(unregistered) > 0 {

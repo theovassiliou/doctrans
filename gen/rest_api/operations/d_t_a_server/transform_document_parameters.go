@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	rest_models "github.com/theovassiliou/doctrans/gen/rest_models"
+	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
 // NewTransformDocumentParams creates a new TransformDocumentParams object

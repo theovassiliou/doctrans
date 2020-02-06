@@ -80,8 +80,8 @@ dtaservice/dtaservice.pb.go dtaservice/dtaservice.validator.pb.go: dtaservice/dt
 
 
 gen/rest_client/dtaservice_proto_client.go: swagger/dtaservice.swagger.json
-	swagger generate client -c gen/rest_client -s gen/rest_api -m gen/rest_models -f swagger/dtaservice.swagger.json
+	swagger generate client -c gen/rest_client -m gen/rest_models -f swagger/dtaservice.swagger.json
 
 gen/rest_api/configure_dtaservice_proto.go: swagger/dtaservice.swagger.json
-	swagger generate server -c gen/rest_client -s gen/rest_api -m gen/rest_models -f swagger/dtaservice.swagger.json
+	swagger generate server -s gen/rest_api -m gen/rest_models -f swagger/dtaservice.swagger.json
 

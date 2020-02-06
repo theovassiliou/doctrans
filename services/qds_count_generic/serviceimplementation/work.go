@@ -8,17 +8,11 @@ import (
 	"regexp"
 
 	pb "github.com/theovassiliou/doctrans/dtaservice"
-
-	"github.com/theovassiliou/go-eureka-client/eureka"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 
 	log "github.com/sirupsen/logrus"
 )
-
-type Manager struct {
-	pb.UnimplementedDTAServerServer
-	SrvHandler *pb.DocTransServer
-	Registry   *eureka.Client
-}
 
 // countResults describes the results of the transformation
 type countResults struct {
@@ -69,8 +63,12 @@ func counter(r io.Reader, sep []byte) (int, error) {
 	}
 }
 
+type WorkerImplementation struct {
+	pb.UnimplementedDTAServerServer
+}
+
 // TransformDocument implements dtaservice.DTAServer
-func (s *Manager) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
+func (WorkerImplementation) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	l, sOut, sErr := Work(in.GetDocument(), in.GetOptions())
 	var errorS []string
 	if sErr != nil {
@@ -88,17 +86,21 @@ func (s *Manager) TransformDocument(ctx context.Context, in *pb.DocumentRequest)
 }
 
 // ListServices list available services provided by this implementation
-func (s *Manager) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
-	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
-	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", s.ApplicationName())
+func (WorkerImplementation) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
+	log.WithFields(log.Fields{"Service": ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
+	log.WithFields(log.Fields{"Service": ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", ApplicationName())
 	services := (&pb.ListServicesResponse{}).Services
-	services = append(services, s.ApplicationName())
+	services = append(services, ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
 
 }
 
+func (WorkerImplementation) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
+}
+
 // ApplicationName returns the name of the service application
-func (s *Manager) ApplicationName() string {
+func ApplicationName() string {
 	// return serviceName
-	return ""
+	return "ECHO"
 }

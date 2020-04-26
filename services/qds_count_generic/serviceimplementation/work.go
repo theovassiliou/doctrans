@@ -63,12 +63,11 @@ func counter(r io.Reader, sep []byte) (int, error) {
 	}
 }
 
-type WorkerImplementation struct {
-	pb.UnimplementedDTAServerServer
+type Implementation struct {
 }
 
 // TransformDocument implements dtaservice.DTAServer
-func (WorkerImplementation) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
+func (Implementation) TransformDocument(ctx context.Context, in *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
 	l, sOut, sErr := Work(in.GetDocument(), in.GetOptions())
 	var errorS []string
 	if sErr != nil {
@@ -86,7 +85,7 @@ func (WorkerImplementation) TransformDocument(ctx context.Context, in *pb.Docume
 }
 
 // ListServices list available services provided by this implementation
-func (WorkerImplementation) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
+func (Implementation) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
 	log.WithFields(log.Fields{"Service": ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
 	log.WithFields(log.Fields{"Service": ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", ApplicationName())
 	services := (&pb.ListServicesResponse{}).Services
@@ -95,12 +94,12 @@ func (WorkerImplementation) ListServices(ctx context.Context, req *pb.ListServic
 
 }
 
-func (WorkerImplementation) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+func (Implementation) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
 }
 
 // ApplicationName returns the name of the service application
 func ApplicationName() string {
 	// return serviceName
-	return "ECHO"
+	return "count"
 }

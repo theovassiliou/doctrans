@@ -4,7 +4,7 @@ import (
 	dtaf "github.com/theovassiliou/doctrans/dtaservice"
 )
 
-type QdsWormhole struct {
+type AQdsWormhole struct {
 	dtaf.UnimplementedDTAServerServer
 
 	// -- Galaxies Registrar -- The service has be registered there

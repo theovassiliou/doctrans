@@ -51,7 +51,7 @@ Man kann der Tabelle entnehmen, dass eine Galaxie (`tu-berlin`) auch Präfixe be
 | de.tu-berlin-Wurmloch | gw | de.tu-berlin.gw |
 | de.tu-berlin.qds-Wurmloch | gw | de.tu-berlin.qds.gw |
 
-*Wurmlöcher* könne zwar auch beliebige Namen haben, aus Vereinfachungsgründen nennen wir unsere *Wurmlöcher* aber alle `gw`. Durch die Vollqualifiezierung des Namens durch die Galaxsieshierarchie sind sie eindeutig identifizierbar. Vorteil der globalen Festlegung auf einen (nicht-qualifiziert) Wurmlochnamen ist, dass *Services* und *Wurmlöcher* gemeinsamen in einer untypisierten Datenbank (siehe `Registry`, weiter unten) verwaltet können. Nachteil ist, dass der Wurmlochname, nicht erneut verwendet werden kann.
+*Wurmlöcher* könne zwar auch beliebige Namen haben, aus Vereinfachungsgründen nennen wir unsere *Wurmlöcher* aber alle `gw`. Durch die Vollqualifiezierung des Namens durch die Galaxsieshierarchie sind sie eindeutig identifizierbar. Vorteil der globalen Festlegung auf einen (nicht-qualifiziert) Wurmlochnamen ist, dass *Services* und *Wurmlöcher* gemeinsamen in einer untypisierten Datenbank (siehe `Registry`, weiter unten) verwaltet werden können. Nachteil ist, dass der Wurmlochname, nicht erneut verwendet werden kann.
 
 | Objekt |Name | FQN |
 | ---- | ---- | ---- |
@@ -96,7 +96,7 @@ Die Objekte im *Universum* können zur Diensterfüllung zwei Operation nutzen
     func (s Service) use(name FQSN) (document, error)
 ```
 
-Die Operation `resolve` kann auf eine Registry angewendet werden, und liefert für ein Vollqualifizierten Namen einen Service, der diesen so referenzierten Service erbringen kann. Sollte der Dienst nicht auf einen Objekt aufgelöst werden können, so wird ein Fehler übergeben.
+Die Operation `resolve` kann auf eine Registry angewendet werden, und liefert für ein vollqualifizierten Namen eine Serviceinstanz, die diesen so referenzierten Service erbringen kann. Sollte der Dienst nicht auf einen Objekt aufgelöst werden können, so wird ein Fehler übergeben.
 
 Die Operation `use` kann auf einen Service angewendet werden, benötigt einen vollqualifizierten Servicenamen und liefert das Serviceergebnis zurück. Sollte der Service nicht erbracht werden können, so wird ein Fehler zurückgegeben.
 
@@ -118,7 +118,8 @@ Befindet sich der gesuchte *Service* in einer Galaxie, so stellt sich die Nutzun
      alt="C1 nutzt echo"
      height="500ptx"/>
 
-Dee `resolve()` Anfrage kann in diesem Fall nicht mit der Serviceinstanz beantwortet werden. Vielmehr liefert die Registery (R1) unter folgenden Bedingungen die Instanz eines Wurmloches (doctrans.gw) zurück.
+Dee `resolve()` Anfrage kann in diesem Fall von Registery (R1) nicht mit der Serviceinstanz beantwortet werden. Vielmehr liefert R1 die  unter folgenden Bedingungen die Instanz eines Wurmloches (doctrans.gw) zurück.
+
     1) Statische Vorbedingung: Die *Registry* weiss, dass ein Wurmloch *alle* Serviceanfragen für seinen Präfix erbringen kann.
     2) Dynamische Vorbedingung: Das Wurmloch hat sich mit seinem FQSN bei der *Registry* registriert.
 
@@ -133,7 +134,15 @@ Mithilfe der statischen Vorbedingung (und der Festlegung auf einen Wurmlochnamen
     5. Kann der FQSN nicht weiter gekürzt werden, breche die Suche ab. Die Registry kennt keine Instanz, die diese Serviceanfrage bearbeiten könnte
 ```
 
-Da in diesem Fall der Service `doctrans.html2text` nicht 
+Da in diesem Fall der Service `doctrans.html2text` R1 nicht bekannt ist geht sie entsprechend dem Algorthimus wie folgt vor
+
+```text
+    1. R1 kennt die Services: ECHO, DOCTRANS.GW und DE.TU-BERLIN.GW
+    2. Nach kürzen: ECHO, DOCTRANS, DE.TU-BERLIN
+    3. doctrans.html2text != (ECHO | DOCTRANS | DE.TU-BERLIN)
+    4. kürze doctrans.htm2text -> doctrans
+    3. doctrans == (ECHO | DOCTRANS | DE.TU-BERLIN) -> DONE, return DOCTRANS
+```
 
 #### C1 -> de.tu-berlin.qds.count
 

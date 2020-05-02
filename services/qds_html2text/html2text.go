@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
+	"net"
+	"sync"
 
+	"github.com/jpillora/opts"
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
 	"jaytaylor.com/html2text"
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 	"github.com/theovassiliou/doctrans/qdsservices"
 )
 
@@ -22,6 +23,7 @@ var VERSION = "0.0" + version + "-src"
 
 const (
 	appName = "DE.TU-BERLIN.QDS.HTML2TEXT"
+	dtaType = "Service"
 )
 
 // Work returns a nicely formatted text from a HTML input
@@ -30,54 +32,128 @@ func Work(input []byte, options []string) (string, []string, error) {
 	return string(text), []string{}, err
 }
 
+type ServiceOptions struct {
+	pb.DocTransServerOptions
+	pb.DocTransServerGenericOptions
+}
+
+func calcStatusURL(url, appName, instanceId string) string {
+	return url + "/apps/" + appName + "/" + instanceId
+}
+
+func NewDtaService(options ServiceOptions, appName, proto string) DtaService {
+	var gw = DtaService{
+		DocTransServer: pb.DocTransServer{
+			AppName: appName,
+			DtaType: dtaType,
+			Proto:   proto,
+		},
+	}
+	return gw
+}
+
 // DtaService holds the infrastructure for performing the service.
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
-	srvHandler *pb.DocTransServer
-	resolver   *eureka.Client
+	pb.DocTransServer
+	resolver *eureka.Client
+	listener net.Listener
 }
 
 func main() {
 	workingHomeDir, _ := homedir.Dir()
+	homepageURL := "https://github.com/theovassiliou/doctrans/blob/master/gateway/README.md"
 
-	dts := &pb.DocTransServer{
-		AppName:  appName,
-		CfgFile:  workingHomeDir + "/.dta/" + appName + "/config.json",
-		LogLevel: log.WarnLevel,
+	serviceOptions := ServiceOptions{}
+	serviceOptions.CfgFile = workingHomeDir + "/.dta/" + appName + "/config.json"
+	serviceOptions.LogLevel = log.WarnLevel
+	serviceOptions.HostName = aux.GetHostname()
+	serviceOptions.RegistrarURL = "http://eureka:8761/eureka"
+
+	opts.New(&serviceOptions).
+		Repo("github.com/theovassiliou/doctrans").
+		ConfigPath(serviceOptions.CfgFile).
+		Version(VERSION).
+		Parse()
+
+	if serviceOptions.LogLevel != 0 {
+		log.SetLevel(serviceOptions.LogLevel)
 	}
 
-	// (1) SetUp Configuration
+	// Calc Configuration
+	registerGRPC, registerHTTP := determineServerConfig(serviceOptions)
 
-	dts = pb.SetupConfiguration(dts, workingHomeDir, VERSION)
-	if dts.AppName == "" {
-		dts.AppName = appName
+	var _httpListener net.Listener
+	var _httpPort int
+
+	// create GRPC Listener
+	// -- take initial port
+	_initialPort := serviceOptions.Port
+	// -- start listener and save used grpc port
+	_grpcListener, _grpcPort := pb.InitListener(_initialPort)
+
+	// create HTTP Listener (optional)
+	if registerHTTP {
+		// -- take GRPC port + 1
+		// -- start listener and save used http port
+		_httpListener, _httpPort = pb.InitListener(_grpcPort + 1)
 	}
-	// init the resolver so that we have access to the list of apps
-	service := &DtaService{
-		srvHandler: dts,
+
+	ipAddressUsed, _ := aux.ExternalIP()
+
+	grpcGateway := NewDtaService(serviceOptions, appName, "grpc")
+	grpcGateway.NewInstanceInfo("grpc@"+serviceOptions.HostName, appName, ipAddressUsed, _grpcPort,
+		0, false, dtaType, "grpc",
+		homepageURL,
+		calcStatusURL(serviceOptions.RegistrarURL, appName, "grpc@"+serviceOptions.HostName),
+		"")
+
+	httpGateway := NewDtaService(serviceOptions, appName, "http")
+	httpGateway.NewInstanceInfo("http@"+serviceOptions.HostName, appName, ipAddressUsed, _httpPort,
+		0, false, dtaType, "http",
+		homepageURL,
+		calcStatusURL(serviceOptions.RegistrarURL, appName, "http@"+serviceOptions.HostName),
+		"")
+
+	var wg sync.WaitGroup
+
+	// Register at registrar
+	// -- Register service with GRPC protocol
+	log.Tracef("RegistrarURL: %s\n", serviceOptions.RegistrarURL)
+	if registerGRPC && serviceOptions.RegistrarURL != "" {
+		grpcGateway.RegisterAtRegistry(serviceOptions.RegistrarURL)
+	}
+	if registerGRPC {
+		go pb.StartGrpcServer(_grpcListener, &grpcGateway)
+		qdsservices.CaptureSignals(&grpcGateway.DocTransServer, serviceOptions.RegistrarURL, &wg)
+		wg.Add(1)
 	}
 
-	// (2) Init and register GRPC Service
-	lis := pb.GrpcLisInitAndReg(service.srvHandler)
+	// -- Register service with HTTP protocol (optional)
+	if registerHTTP && serviceOptions.RegistrarURL != "" {
+		httpGateway.RegisterAtRegistry(serviceOptions.RegistrarURL)
+	}
 
-	// In case of a service the resolver is the registry. Might be nil in case no registration was configured
-	service.resolver = service.srvHandler.Registrar()
-
-	go pb.StartGrpcServer(lis, service)
-
-	// Start dta service by using the listener
-
-	if dts.REST {
-		//(3) Let's instanciate the the HTTP Server
-		qdsservices.CaptureSignals(service.srvHandler)
+	if registerHTTP {
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		pb.MuxHTTPGrpc(ctx, dts.HTTPPort, service.srvHandler)
-	} else {
-		signalCh := make(chan os.Signal)
-		signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-		qdsservices.HandleSignals(service.srvHandler, signalCh)
+		go pb.MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
+		qdsservices.CaptureSignals(&httpGateway.DocTransServer, serviceOptions.RegistrarURL, &wg)
+		wg.Add(1)
+	}
+
+	wg.Wait()
+	return
+}
+
+func determineServerConfig(gwOptions ServiceOptions) (registerGRPC, registerHTTP bool) {
+	if (!gwOptions.HTTP && !gwOptions.GRPC) || gwOptions.GRPC {
+		registerGRPC = true
+	}
+
+	if (!gwOptions.HTTP && !gwOptions.GRPC) || gwOptions.HTTP {
+		registerHTTP = true
 	}
 	return
 }
@@ -111,5 +187,5 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 // ApplicationName returns the name of the service application
 func (s *DtaService) ApplicationName() string {
-	return s.srvHandler.AppName
+	return s.AppName
 }

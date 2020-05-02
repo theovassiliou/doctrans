@@ -1,6 +1,7 @@
 package dtaservice
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/carlescere/scheduler"
@@ -11,6 +12,7 @@ import (
 func (dtas *DocTransServer) InstanceInfo() *eureka.InstanceInfo {
 	return dtas.instanceInfo
 }
+
 func (dtas *DocTransServer) UnregisterAtRegistry() {
 	if dtas.instanceInfo != nil {
 		dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
@@ -23,28 +25,22 @@ func (dtas *DocTransServer) UnregisterAtRegistry() {
 }
 
 // RegisterAtRegistry registers the DocTransServer at the Area Registry
-func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, dtaType string, ttl uint, isSsl bool) {
-
+func (dtas *DocTransServer) RegisterAtRegistry(registerURL string) {
 	// Build Eureka Configuration
 	dtas.registrar = eureka.NewClient([]string{
-		dtas.RegistrarURL,
-		// add others servers here
+		registerURL,
 	})
 	dtas.registrar.CheckRetry = eureka.ExpBackOffCheckRetry
 	// Create the app instance
-	dtas.instanceInfo = eureka.NewInstanceInfo(hostname, app, ipAddress, port, ttl, isSsl) //Create a new instance to register
-	// Add some meta data. Currently no meaning
-	// TODO: Remove this playground if not further required
-	dtas.instanceInfo.Metadata = &eureka.MetaData{
-		Map: make(map[string]string),
-	}
-	dtas.instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
+
 	// Register instance and heartbeat for Eureka
-	dtas.registrar.RegisterInstance(app, dtas.instanceInfo) // Register new instance in your eureka(s)
-	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s\n", app)
+	dtas.registrar.RegisterInstance(dtas.instanceInfo.App, dtas.instanceInfo) // Register new instance in your eureka(s)
+	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s\n", dtas.instanceInfo.App)
+	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Tracef("InstanceInfo %v\n", dtas.instanceInfo)
 
 	job := func() {
-		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Trace("sending heartbeat : %v\n", time.Now().UTC())
+		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Tracef("sending heartbeat : %v\n", time.Now().UTC())
+		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Upt"}).Tracef("InstanceInfo %v\n", dtas.instanceInfo)
 		dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
 	}
 
@@ -56,4 +52,45 @@ func (dtas *DocTransServer) RegisterAtRegistry(hostname, app, ipAddress, port, d
 // Registrar returns the Eureka intance where the server has registered.
 func (dtas *DocTransServer) Registrar() *eureka.Client {
 	return dtas.registrar
+}
+
+// NewInstanceInfo
+func (dtas *DocTransServer) NewInstanceInfo(hostName, app, ip string, port int, ttl uint, isSsl bool, dtaType, proto string, homePageURL, statusURL, healthURL string) *eureka.InstanceInfo {
+	dataCenterInfo := &eureka.DataCenterInfo{
+		Name:     "MyOwn",
+		Class:    "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+		Metadata: nil,
+	}
+	leaseInfo := &eureka.LeaseInfo{
+		EvictionDurationInSecs: ttl,
+	}
+	instanceInfo := &eureka.InstanceInfo{
+		HostName:       hostName,
+		App:            app,
+		IpAddr:         ip,
+		Status:         eureka.UP,
+		DataCenterInfo: dataCenterInfo,
+		LeaseInfo:      leaseInfo,
+		Metadata:       nil,
+	}
+	instanceInfo.Port = &eureka.Port{
+		Port:    strconv.Itoa(port),
+		Enabled: "true",
+	}
+
+	instanceInfo.SecurePort = &eureka.Port{
+		Port:    "0",
+		Enabled: "false",
+	}
+
+	instanceInfo.Metadata = &eureka.MetaData{
+		Map: make(map[string]string),
+	}
+	instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
+	instanceInfo.Metadata.Map["DTA-Proto"] = proto
+	instanceInfo.HomePageUrl = homePageURL
+	instanceInfo.StatusPageUrl = statusURL
+	instanceInfo.HealthCheckUrl = healthURL
+	dtas.instanceInfo = instanceInfo
+	return instanceInfo
 }

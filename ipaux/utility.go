@@ -2,7 +2,9 @@ package aux
 
 import (
 	"errors"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -63,4 +65,25 @@ func GetIPAdress() string {
 		log.Info("Unable to find IP address from OS")
 	}
 	return ipAddress
+}
+
+// PublicIP returns the public IP address as seen from the internet, by quering a public API for it perceived IP address
+func PublicIP() (string, error) {
+	url := "https://api.ipify.org?format=text" // we are using a pulib IP API, we're using ipify here, below are some others
+	// https://www.ipify.org
+	// http://myexternalip.com
+	// http://api.ident.me
+	// http://whatismyipaddress.com/api
+	log.Debugf("Getting IP address from  ipify ...\n")
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	ip, err := ioutil.ReadAll(resp.Body)
+	if err == nil {
+		return string(ip), nil
+	}
+
+	return "", err
 }

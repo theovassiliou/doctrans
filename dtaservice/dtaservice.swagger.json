@@ -1,0 +1,463 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DTA API v1",
+    "description": "The Document Transformation Application (DTA) API.",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "service",
+      "description": "Retrieves information about service(s)."
+    },
+    {
+      "name": "document",
+      "description": "Operations on document."
+    }
+  ],
+  "paths": {
+    "/v1/service/options": {
+      "get": {
+        "tags": [
+          "service"
+        ],
+        "summary": "Retrieves available options of the service.",
+        "description": "The response **must** be a valid [JSON Schema](http://json-schema.org/draft-07/schema#).",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid Schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionsErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": 504,
+                  "message": "Gateway Timeout"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/service/list": {
+      "get": {
+        "tags": [
+          "service"
+        ],
+        "summary": "Lists available services.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListServicesResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": 504,
+                  "message": "Gateway Timeout"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/document/transform": {
+      "post": {
+        "tags": [
+          "document"
+        ],
+        "summary": "Transforms a plain document.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformDocumentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformDocumentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionsErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": 504,
+                  "message": "Gateway Timeout"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/document/transform-pipe": {
+      "post": {
+        "tags": [
+          "document"
+        ],
+        "summary": "Executes a given sequence of transforms on a plain document.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformDocumentPipeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformDocumentPipeResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": 504,
+                  "message": "Gateway Timeout"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ServiceInfo": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ListServicesResponse": {
+        "required": [
+          "services"
+        ],
+        "properties": {
+          "services": {
+            "type": "array",
+            "description": "Available services.",
+            "example": [
+              {
+                "name": "DE.TU-BERLIN.QDS.COUNT"
+              },
+              {
+                "name": "DE.TU-BERLIN.QDS.ECHO"
+              },
+              {
+                "name": "DE.TU-BERLIN.QDS.HTML2TEXT"
+              },
+              {
+                "name": "DE.TU-BERLIN.QDS.TEXT2HTML"
+              },
+              {
+                "name": "DE.TU-BERLIN.QDS.COUNT_GENERIC"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ServiceInfo"
+            }
+          }
+        }
+      },
+      "TransformDocumentResponse": {
+        "required": [
+          "document",
+          "error",
+          "output"
+        ],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Transformed Base64 encoded document.",
+            "format": "byte",
+            "example": "SGFsbG8gZGFzIGlzdCBlaW4gVGVzdCBEb2N1bWVudCE="
+          },
+          "output": {
+            "type": "array",
+            "description": "Standard output from the specified service.",
+            "example": [
+              "transforming document <simpletext.txt> ..."
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "array",
+            "description": "Standard error from the specified service.",
+            "example": [
+              "Unknown Exception"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TransformDocumentRequest": {
+        "required": [
+          "document",
+          "service_name"
+        ],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Base64 encoded document.",
+            "format": "byte",
+            "example": "SGFsbG8gZGFzIGlzdCBlaW4gVGVzdCBEb2N1bWVudCE="
+          },
+          "service_name": {
+            "type": "string",
+            "description": "The name of the service which performs the transformation.",
+            "example": "DE.TU-BERLIN.QDS.COUNT"
+          },
+          "file_name": {
+            "type": "string",
+            "description": "The filename of the document.",
+            "example": "simpletext.txt"
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Service options.",
+            "example": {
+              "offset": 5,
+              "debug": true
+            }
+          }
+        }
+      },
+      "PipeService": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object"
+          }
+        }
+      },
+      "TransformDocumentPipeRequest": {
+        "required": [
+          "document",
+          "services"
+        ],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Base64 encoded document.",
+            "format": "byte",
+            "example": "SGFsbG8gZGFzIGlzdCBlaW4gVGVzdCBEb2N1bWVudCE="
+          },
+          "services": {
+            "type": "array",
+            "description": "Sequence of services that are used to transform the document. (Each service can have options)",
+            "items": {
+              "$ref": "#/components/schemas/PipeService"
+            }
+          },
+          "file_name": {
+            "type": "string",
+            "description": "The filename of the document."
+          }
+        }
+      },
+      "TransformDocumentPipeResponse": {
+        "required": [
+          "document",
+          "error",
+          "output"
+        ],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Transformed Base64 encoded document.",
+            "format": "byte",
+            "example": "SGFsbG8gZGFzIGlzdCBlaW4gVGVzdCBEb2N1bWVudCE="
+          },
+          "output": {
+            "type": "array",
+            "description": "Standard output from the specified service.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "array",
+            "description": "Standard error from the specified service.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_transformer": {
+            "type": "string",
+            "description": "Name of the last service which transformed the document."
+          }
+        }
+      },
+      "OptionsPropertyError": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "OptionsErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionsPropertyError"
+            }
+          }
+        },
+        "example": {
+          "code": 400,
+          "properties": [
+            {
+              "name": "offset",
+              "message": "Must be between 0 and 27"
+            }
+          ]
+        }
+      },
+      "ErrorResponse": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": 500,
+          "message": "Internal Server Error"
+        }
+      }
+    }
+  }
+}

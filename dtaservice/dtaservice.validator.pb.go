@@ -5,11 +5,11 @@ package dtaservice
 
 import (
 	fmt "fmt"
+	math "math"
 	proto "github.com/golang/protobuf/proto"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	_ "github.com/mwitkow/go-proto-validators"
 	github_com_mwitkow_go_proto_validators "github.com/mwitkow/go-proto-validators"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -29,7 +29,13 @@ func (this *TransformDocumentResponse) Validate() error {
 func (this *ListServiceRequest) Validate() error {
 	return nil
 }
+func (this *OptionsRequest) Validate() error {
+	return nil
+}
 func (this *ListServicesResponse) Validate() error {
+	return nil
+}
+func (this *OptionsResponse) Validate() error {
 	return nil
 }
 func (this *TransformPipeRequest) Validate() error {

@@ -22,10 +22,6 @@
 
 syntax = "proto3";
 
-option java_multiple_files = true;
-option java_package = "de.tu-berlin.qds.dta";
-option java_outer_classname = "DTAProto";
-
 package dtaservice;
 
 import "google/api/annotations.proto";
@@ -36,19 +32,24 @@ service DTAServer {
   // Request to transform a plain text document
   rpc TransformDocument (DocumentRequest) returns (TransformDocumentResponse) {
        option (google.api.http) = {
-        post: "/v1/dta/document/transform"
+        post: "/v1/document/transform"
         body: "*"
       };
   }
   rpc ListServices(ListServiceRequest) returns (ListServicesResponse) {
     option (google.api.http) = {
-      get: "/v1/dta/service/list"
+      get: "/v1/service/list"
     };
   }
   rpc TransformPipe(TransformPipeRequest) returns (TransformDocumentResponse) {
     option (google.api.http) = {
-      post: "/v1/dta/document/transform-pipe"
+      post: "/v1/document/transform-pipe"
       body: "*"
+    };
+  }
+  rpc Options(OptionsRequest) returns (OptionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/service/options"
     };
   }
 }
@@ -70,9 +71,15 @@ message TransformDocumentResponse {
 
 message ListServiceRequest {
 }
+message OptionsRequest {
+}
 
 message ListServicesResponse {
   repeated string services = 1;
+}
+
+message OptionsResponse {
+  string services = 1;
 }
 
 message TransformPipeRequest {

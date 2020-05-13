@@ -11,15 +11,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// ListServicesURL generates an URL for the list services operation
-type ListServicesURL struct {
+// DTAServerListServicesURL generates an URL for the d t a server list services operation
+type DTAServerListServicesURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *ListServicesURL) WithBasePath(bp string) *ListServicesURL {
+func (o *DTAServerListServicesURL) WithBasePath(bp string) *DTAServerListServicesURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,15 +27,15 @@ func (o *ListServicesURL) WithBasePath(bp string) *ListServicesURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *ListServicesURL) SetBasePath(bp string) {
+func (o *DTAServerListServicesURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *ListServicesURL) Build() (*url.URL, error) {
+func (o *DTAServerListServicesURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/v1/dta/service/list"
+	var _path = "/v1/service/list"
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
@@ -44,7 +44,7 @@ func (o *ListServicesURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *ListServicesURL) Must(u *url.URL, err error) *url.URL {
+func (o *DTAServerListServicesURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -55,17 +55,17 @@ func (o *ListServicesURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *ListServicesURL) String() string {
+func (o *DTAServerListServicesURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *ListServicesURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *DTAServerListServicesURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on ListServicesURL")
+		return nil, errors.New("scheme is required for a full url on DTAServerListServicesURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on ListServicesURL")
+		return nil, errors.New("host is required for a full url on DTAServerListServicesURL")
 	}
 
 	base, err := o.Build()
@@ -79,6 +79,6 @@ func (o *ListServicesURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *ListServicesURL) StringFull(scheme, host string) string {
+func (o *DTAServerListServicesURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

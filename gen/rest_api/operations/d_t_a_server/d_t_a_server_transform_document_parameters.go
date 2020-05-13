@@ -16,18 +16,18 @@ import (
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
-// NewTransformDocumentParams creates a new TransformDocumentParams object
+// NewDTAServerTransformDocumentParams creates a new DTAServerTransformDocumentParams object
 // no default values defined in spec.
-func NewTransformDocumentParams() TransformDocumentParams {
+func NewDTAServerTransformDocumentParams() DTAServerTransformDocumentParams {
 
-	return TransformDocumentParams{}
+	return DTAServerTransformDocumentParams{}
 }
 
-// TransformDocumentParams contains all the bound params for the transform document operation
+// DTAServerTransformDocumentParams contains all the bound params for the d t a server transform document operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters TransformDocument
-type TransformDocumentParams struct {
+// swagger:parameters DTAServer_TransformDocument
+type DTAServerTransformDocumentParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -42,8 +42,8 @@ type TransformDocumentParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewTransformDocumentParams() beforehand.
-func (o *TransformDocumentParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewDTAServerTransformDocumentParams() beforehand.
+func (o *DTAServerTransformDocumentParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

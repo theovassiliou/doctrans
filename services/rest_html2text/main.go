@@ -51,14 +51,14 @@ func main() {
 	}
 	server.Port = *portFlag
 
-	api.DtaServerTransformDocumentHandler = d_t_a_server.TransformDocumentHandlerFunc(
-		func(params d_t_a_server.TransformDocumentParams) middleware.Responder {
+	api.DtaServerDTAServerTransformDocumentHandler = d_t_a_server.DTAServerTransformDocumentHandlerFunc(
+		func(params d_t_a_server.DTAServerTransformDocumentParams) middleware.Responder {
 			document := params.Body.Document
 			fileName := params.Body.FileName
 			log.Println(document)
 			text, _ := html2text.FromString(string(document), html2text.Options{PrettyTables: true})
 
-			return d_t_a_server.NewTransformDocumentOK().WithPayload(&rest_models.DtaserviceTransformDocumentResponse{
+			return d_t_a_server.NewDTAServerTransformDocumentOK().WithPayload(&rest_models.DtaserviceTransformDocumentResponse{
 				TransDocument: []byte(text),
 				TransOutput:   []string{fileName},
 			})

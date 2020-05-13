@@ -8,8 +8,7 @@ package rest_client
 import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/theovassiliou/doctrans/gen/rest_client/d_t_a_server"
 )
@@ -56,9 +55,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Dtaservice
 
 	cli := new(DtaserviceProto)
 	cli.Transport = transport
-
 	cli.DtaServer = d_t_a_server.New(transport, formats)
-
 	return cli
 }
 
@@ -103,7 +100,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // DtaserviceProto is a client for dtaservice proto
 type DtaserviceProto struct {
-	DtaServer *d_t_a_server.Client
+	DtaServer d_t_a_server.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -111,7 +108,5 @@ type DtaserviceProto struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *DtaserviceProto) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
 	c.DtaServer.SetTransport(transport)
-
 }

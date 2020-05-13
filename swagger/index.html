@@ -195,17 +195,18 @@
   <div class="method-summary"></div>
   <h4><a href="#DTAServer">DTAServer</a></h4>
   <ul>
-  <li><a href="#listServices"><code><span class="http-method">get</span> /v1/dta/service/list</code></a></li>
-  <li><a href="#transformDocument"><code><span class="http-method">post</span> /v1/dta/document/transform</code></a></li>
-  <li><a href="#transformPipe"><code><span class="http-method">post</span> /v1/dta/document/transform-pipe</code></a></li>
+  <li><a href="#dTAServerListServices"><code><span class="http-method">get</span> /v1/service/list</code></a></li>
+  <li><a href="#dTAServerOptions"><code><span class="http-method">get</span> /v1/service/options</code></a></li>
+  <li><a href="#dTAServerTransformDocument"><code><span class="http-method">post</span> /v1/document/transform</code></a></li>
+  <li><a href="#dTAServerTransformPipe"><code><span class="http-method">post</span> /v1/document/transform-pipe</code></a></li>
   </ul>
 
   <h1><a name="DTAServer">DTAServer</a></h1>
-  <div class="method"><a name="listServices"></a>
+  <div class="method"><a name="dTAServerListServices"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/dta/service/list</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">listServices</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/service/list</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">dTAServerListServices</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -239,13 +240,59 @@
     <h4 class="field-label">200</h4>
     A successful response.
         <a href="#dtaserviceListServicesResponse">dtaserviceListServicesResponse</a>
+    <h4 class="field-label">default</h4>
+    An unexpected error response
+        <a href="#runtimeError">runtimeError</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="transformDocument"></a>
+  <div class="method"><a name="dTAServerOptions"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/dta/document/transform</code></pre></div>
-    <div class="method-summary">Request to transform a plain text document (<span class="nickname">transformDocument</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/service/options</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">dTAServerOptions</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#dtaserviceOptionsResponse">dtaserviceOptionsResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "services" : "services"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    A successful response.
+        <a href="#dtaserviceOptionsResponse">dtaserviceOptionsResponse</a>
+    <h4 class="field-label">default</h4>
+    An unexpected error response
+        <a href="#runtimeError">runtimeError</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dTAServerTransformDocument"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/document/transform</code></pre></div>
+    <div class="method-summary">Request to transform a plain text document (<span class="nickname">dTAServerTransformDocument</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -292,13 +339,16 @@
     <h4 class="field-label">200</h4>
     A successful response.
         <a href="#dtaserviceTransformDocumentResponse">dtaserviceTransformDocumentResponse</a>
+    <h4 class="field-label">default</h4>
+    An unexpected error response
+        <a href="#runtimeError">runtimeError</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="transformPipe"></a>
+  <div class="method"><a name="dTAServerTransformPipe"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/dta/document/transform-pipe</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">transformPipe</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/document/transform-pipe</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">dTAServerTransformPipe</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -345,6 +395,9 @@
     <h4 class="field-label">200</h4>
     A successful response.
         <a href="#dtaserviceTransformDocumentResponse">dtaserviceTransformDocumentResponse</a>
+    <h4 class="field-label">default</h4>
+    An unexpected error response
+        <a href="#runtimeError">runtimeError</a>
   </div> <!-- method -->
   <hr/>
 
@@ -355,8 +408,11 @@
   <ol>
     <li><a href="#dtaserviceDocumentRequest"><code>dtaserviceDocumentRequest</code> - The request message containing the document to be transformed</a></li>
     <li><a href="#dtaserviceListServicesResponse"><code>dtaserviceListServicesResponse</code></a></li>
+    <li><a href="#dtaserviceOptionsResponse"><code>dtaserviceOptionsResponse</code></a></li>
     <li><a href="#dtaserviceTransformDocumentResponse"><code>dtaserviceTransformDocumentResponse</code> - The response message containing the transformed message</a></li>
     <li><a href="#dtaserviceTransformPipeRequest"><code>dtaserviceTransformPipeRequest</code></a></li>
+    <li><a href="#protobufAny"><code>protobufAny</code></a></li>
+    <li><a href="#runtimeError"><code>runtimeError</code></a></li>
   </ol>
 
   <div class="model">
@@ -377,6 +433,13 @@
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="dtaserviceOptionsResponse"><code>dtaserviceOptionsResponse</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">services (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="dtaserviceTransformDocumentResponse"><code>dtaserviceTransformDocumentResponse</code> - The response message containing the transformed message</a> <a class="up" href="#__Models">Up</a></h3>
     
     <div class="field-items">
@@ -390,6 +453,24 @@
     
     <div class="field-items">
       <div class="param">pipe (optional)</div><div class="param-desc"><span class="param-type"><a href="#dtaserviceDocumentRequest">array[dtaserviceDocumentRequest]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="protobufAny"><code>protobufAny</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">type_url (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">value (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: byte</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="runtimeError"><code>runtimeError</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">error (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">code (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">details (optional)</div><div class="param-desc"><span class="param-type"><a href="#protobufAny">array[protobufAny]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>

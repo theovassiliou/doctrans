@@ -10,22 +10,22 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// DtaserviceListServicesResponse dtaservice list services response
+// DtaserviceOptionsResponse dtaservice options response
 //
-// swagger:model dtaserviceListServicesResponse
-type DtaserviceListServicesResponse struct {
+// swagger:model dtaserviceOptionsResponse
+type DtaserviceOptionsResponse struct {
 
 	// services
-	Services []string `json:"services"`
+	Services string `json:"services,omitempty"`
 }
 
-// Validate validates this dtaservice list services response
-func (m *DtaserviceListServicesResponse) Validate(formats strfmt.Registry) error {
+// Validate validates this dtaservice options response
+func (m *DtaserviceOptionsResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DtaserviceListServicesResponse) MarshalBinary() ([]byte, error) {
+func (m *DtaserviceOptionsResponse) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -33,8 +33,8 @@ func (m *DtaserviceListServicesResponse) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DtaserviceListServicesResponse) UnmarshalBinary(b []byte) error {
-	var res DtaserviceListServicesResponse
+func (m *DtaserviceOptionsResponse) UnmarshalBinary(b []byte) error {
+	var res DtaserviceOptionsResponse
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

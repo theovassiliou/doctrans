@@ -15,7 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
 	aux "github.com/theovassiliou/doctrans/ipaux"
-	"github.com/theovassiliou/doctrans/qdsservices"
 )
 
 var version = ".1"
@@ -136,7 +135,7 @@ func main() {
 	}
 	if registerGRPC {
 		go pb.StartGrpcServer(_grpcListener, &grpcGateway)
-		qdsservices.CaptureSignals(&grpcGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
+		pb.CaptureSignals(&grpcGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 
@@ -150,7 +149,7 @@ func main() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go pb.MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
-		qdsservices.CaptureSignals(&httpGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
+		pb.CaptureSignals(&httpGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 

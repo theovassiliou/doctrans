@@ -5,6 +5,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // TransformDocument
@@ -34,6 +36,17 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
 
+}
+
+func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
+}
+func (*DtaService) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
+}
+
+func (s *DtaService) GetDocTransServer() pb.GenDocTransServer {
+	return s.GenDocTransServer
 }
 
 func (s *DtaService) ApplicationName() string {

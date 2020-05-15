@@ -11,6 +11,8 @@ import (
 	"github.com/theovassiliou/go-eureka-client/eureka"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
@@ -27,23 +29,25 @@ const (
 	dtaType = "Gateway"
 )
 
+var resolver *eureka.Client
+
 // Gateway holds the infrastructure for performing the service
 type Gateway struct {
 	pb.UnimplementedDTAServerServer
-	pb.DocTransServer
-	resolver *eureka.Client
+	pb.GenDocTransServer
 	listener net.Listener
+	pb.IDocTransServer
 }
 
-func NewGateway(options GatewayOptions, appName, proto string) Gateway {
+func NewGateway(options GatewayOptions, appName, proto string) pb.IDocTransServer {
 	var gw = Gateway{
-		DocTransServer: pb.DocTransServer{
+		GenDocTransServer: pb.GenDocTransServer{
 			AppName: appName,
 			DtaType: dtaType,
 			Proto:   proto,
 		},
 	}
-	return gw
+	return &gw
 }
 
 type GatewayOptions struct {
@@ -52,6 +56,7 @@ type GatewayOptions struct {
 	ResolverURL          string `opts:"group=Resolver" help:"Resolver URL"`
 	ResolverRegistration bool   `opts:"group=Resolver" help:"Register in addition also to the resolver"`
 	pb.DocTransServerGenericOptions
+	pb.IDocTransServer
 }
 
 func calcStatusURL(url, appName, instanceId string) string {
@@ -107,21 +112,23 @@ func main() {
 	}
 
 	grpcGateway := NewGateway(gwOptions, appName, "grpc")
-	grpcGateway.NewInstanceInfo("grpc@"+gwOptions.HostName, appName, ipAddressUsed, _grpcPort,
+	gDTS := grpcGateway.GetDocTransServer()
+	gDTS.NewInstanceInfo("grpc@"+gwOptions.HostName, appName, ipAddressUsed, _grpcPort,
 		0, false, dtaType, "grpc",
 		homepageURL,
 		calcStatusURL(gwOptions.RegistrarURL, appName, "grpc@"+gwOptions.HostName),
 		"")
 
 	httpGateway := NewGateway(gwOptions, appName, "http")
-	httpGateway.NewInstanceInfo("http@"+gwOptions.HostName, appName, ipAddressUsed, _httpPort,
+	hDTS := httpGateway.GetDocTransServer()
+	hDTS.NewInstanceInfo("http@"+gwOptions.HostName, appName, ipAddressUsed, _httpPort,
 		0, false, dtaType, "http",
 		homepageURL,
 		calcStatusURL(gwOptions.RegistrarURL, appName, "http@"+gwOptions.HostName),
 		"")
 
 	// create client resolver
-	grpcGateway.resolver = eureka.NewClient([]string{
+	resolver = eureka.NewClient([]string{
 		gwOptions.ResolverURL,
 	})
 
@@ -131,17 +138,17 @@ func main() {
 	// -- Register service with GRPC protocol
 	log.Tracef("RegistrarURL: %s\n", gwOptions.RegistrarURL)
 	if registerGRPC && gwOptions.RegistrarURL != "" {
-		grpcGateway.RegisterAtRegistry(gwOptions.RegistrarURL)
+		gDTS.RegisterAtRegistry(gwOptions.RegistrarURL)
 	}
 	if registerGRPC {
-		go pb.StartGrpcServer(_grpcListener, &grpcGateway)
-		pb.CaptureSignals(&grpcGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
+		go pb.StartGrpcServer(_grpcListener, grpcGateway)
+		pb.CaptureSignals(grpcGateway, gwOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 
 	// -- Register service with HTTP protocol (optional)
 	if registerHTTP && gwOptions.RegistrarURL != "" {
-		httpGateway.RegisterAtRegistry(gwOptions.RegistrarURL)
+		hDTS.RegisterAtRegistry(gwOptions.RegistrarURL)
 	}
 
 	if registerHTTP {
@@ -149,7 +156,7 @@ func main() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go pb.MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
-		pb.CaptureSignals(&httpGateway.DocTransServer, gwOptions.RegistrarURL, &wg)
+		pb.CaptureSignals(httpGateway, gwOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 
@@ -176,7 +183,7 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	log.WithFields(log.Fields{"Service": dtas.AppName, "Status": "TransformDocument"}).Tracef("Received: %v", string(in.GetDocument()))
 
 	// Let's find out whether we find the server that can serve this service.
-	a, err := dtas.resolver.GetApplication(in.GetServiceName())
+	a, err := resolver.GetApplication(in.GetServiceName())
 	if err != nil || len(a.Instances) <= 0 {
 		log.Errorf("Couldn't find server for app %s", in.GetServiceName())
 		return &pb.TransformDocumentResponse{
@@ -199,9 +206,9 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 
 	r, err := c.TransformDocument(ctx, in)
 	if err != nil {
-		log.WithFields(log.Fields{"Service": dtas.DocTransServer.AppName, "Status": "TransformDocument"}).Fatalf("Failed to transform: %s", err.Error())
+		log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "TransformDocument"}).Fatalf("Failed to transform: %s", err.Error())
 	}
-	log.WithFields(log.Fields{"Service": dtas.DocTransServer.AppName, "Status": "TransformDocumentResult"}).Tracef("%s\n", string(r.GetTransDocument()))
+	log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "TransformDocumentResult"}).Tracef("%s\n", string(r.GetTransDocument()))
 
 	return r, err
 }
@@ -209,15 +216,22 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 // ListServices returns all the services visible for this gateway via the resolver
 func (dtas *Gateway) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
 	// ListServices implements dtaservice.DTAServer
-	a, _ := dtas.resolver.GetApplications()
+	a, _ := resolver.GetApplications()
 
-	log.WithFields(log.Fields{"Service": dtas.DocTransServer.AppName, "Status": "ListServices"}).Tracef("Service requested")
-	log.WithFields(log.Fields{"Service": dtas.DocTransServer.AppName, "Status": "ListServices"}).Infof("Known Services registered with EUREKA: %v", a)
+	log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "ListServices"}).Tracef("Service requested")
+	log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "ListServices"}).Infof("Known Services registered with EUREKA: %v", a)
 	services := (&pb.ListServicesResponse{}).Services
 	for _, s := range a.Applications {
 		services = append(services, s.Name)
 	}
 	return &pb.ListServicesResponse{Services: services}, nil
+}
+
+func (*Gateway) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
+}
+func (*Gateway) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
 }
 
 // ApplicationName returns just the application name

@@ -27,13 +27,14 @@ import (
 
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
-	pb.DocTransServer
+	pb.GenDocTransServer
 	resolver              *eureka.Client
 	listener              net.Listener
 	AWSRegion             string
 	AWSCredentialFileName string
 	AWSCredentialProfile  string
 	AWSBucketPath         string
+	pb.IDocTransServer
 }
 
 func check(e error) {
@@ -143,6 +144,7 @@ func Work(s *DtaService, input []byte, fileName string) (string, []string, error
 	return "", nil, nil
 
 }
+
 func ExecuteWorkerLocally(s DtaService, fileName string, additionalInfo bool) {
 	if fileName == "" {
 		log.Errorln("No fileName on local executing provided. Aborting.")

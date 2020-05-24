@@ -22,7 +22,7 @@
           "service"
         ],
         "summary": "Retrieves available options of the service.",
-        "description": "The response **must** be a valid [JSON Schema](http://json-schema.org/draft-07/schema#).",
+        "description": "The response **has to** be a valid [JSON Schema](http://json-schema.org/draft-07/schema#).",
         "responses": {
           "200": {
             "description": "OK",
@@ -169,6 +169,7 @@
           "document"
         ],
         "summary": "Executes a given sequence of transforms on a plain document.",
+        "description": "The services inside the list (`[0, 1, ..., n]`) **has to** be handled in ascending order from the first (`0`) to the last (`n`) element.",
         "requestBody": {
           "content": {
             "application/json": {

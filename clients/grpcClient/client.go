@@ -64,7 +64,7 @@ func check(e error) {
 	}
 }
 
-const dtaGwID = "DE.TU-BERLIN.QDS.GW-INTERNAL"
+const dtaGwID = "BERLIN.VASSILIOU-POHL.GW"
 
 func main() {
 

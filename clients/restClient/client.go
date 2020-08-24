@@ -76,7 +76,7 @@ func main() {
 		log.Fatalln("No file provided.")
 	}
 	// make the request to get all items
-	params := d_t_a_server.NewTransformDocumentParams()
+	params := d_t_a_server.NewDTAServerTransformDocumentParams()
 	_, fileContent := readFile(conf.FileName)
 
 	params.SetBody(&rest_models.DtaserviceDocumentRequest{
@@ -88,7 +88,7 @@ func main() {
 
 	client := apiclient.NewHTTPClientWithConfig(nil, transConf)
 
-	resp, err := client.DtaServer.TransformDocument(params)
+	resp, err := client.DtaServer.DTAServerTransformDocument(params)
 
 	if err != nil {
 		log.Fatal(err)

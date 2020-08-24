@@ -9,11 +9,11 @@ import (
 	"github.com/theovassiliou/go-eureka-client/eureka"
 )
 
-func (dtas *DocTransServer) InstanceInfo() *eureka.InstanceInfo {
+func (dtas *GenDocTransServer) InstanceInfo() *eureka.InstanceInfo {
 	return dtas.instanceInfo
 }
 
-func (dtas *DocTransServer) UnregisterAtRegistry() {
+func (dtas *GenDocTransServer) UnregisterAtRegistry() {
 	if dtas.instanceInfo != nil {
 		dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("Unregister service %s with id %s", dtas.instanceInfo.App, dtas.instanceInfo.InstanceID)
@@ -25,7 +25,7 @@ func (dtas *DocTransServer) UnregisterAtRegistry() {
 }
 
 // RegisterAtRegistry registers the DocTransServer at the Area Registry
-func (dtas *DocTransServer) RegisterAtRegistry(registerURL string) {
+func (dtas *GenDocTransServer) RegisterAtRegistry(registerURL string) {
 	// Build Eureka Configuration
 	dtas.registrar = eureka.NewClient([]string{
 		registerURL,
@@ -50,12 +50,12 @@ func (dtas *DocTransServer) RegisterAtRegistry(registerURL string) {
 }
 
 // Registrar returns the Eureka intance where the server has registered.
-func (dtas *DocTransServer) Registrar() *eureka.Client {
+func (dtas *GenDocTransServer) Registrar() *eureka.Client {
 	return dtas.registrar
 }
 
 // NewInstanceInfo
-func (dtas *DocTransServer) NewInstanceInfo(hostName, app, ip string, port int, ttl uint, isSsl bool, dtaType, proto string, homePageURL, statusURL, healthURL string) *eureka.InstanceInfo {
+func (dtas *GenDocTransServer) NewInstanceInfo(hostName, app, ip string, port int, ttl uint, isSsl bool, dtaType, proto string, homePageURL, statusURL, healthURL string) *eureka.InstanceInfo {
 	dataCenterInfo := &eureka.DataCenterInfo{
 		Name:     "MyOwn",
 		Class:    "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",

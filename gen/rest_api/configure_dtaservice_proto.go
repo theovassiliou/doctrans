@@ -6,15 +6,15 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/theovassiliou/doctrans/gen/rest_api/operations"
 	"github.com/theovassiliou/doctrans/gen/rest_api/operations/d_t_a_server"
 )
 
-//go:generate swagger generate server --target ../../../doctrans --name DtaserviceProto --spec ../../swagger/dtaservice.swagger.json --model-package gen/rest_models --server-package gen/rest_api --client-package gen/rest_client
+//go:generate swagger generate server --target ../../../doctrans --name DtaserviceProto --spec ../../swagger/dtaservice.swagger.json --model-package gen/rest_models --server-package gen/rest_api
 
 func configureFlags(api *operations.DtaserviceProtoAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -34,19 +34,24 @@ func configureAPI(api *operations.DtaserviceProtoAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	if api.DtaServerListServicesHandler == nil {
-		api.DtaServerListServicesHandler = d_t_a_server.ListServicesHandlerFunc(func(params d_t_a_server.ListServicesParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.ListServices has not yet been implemented")
+	if api.DtaServerDTAServerListServicesHandler == nil {
+		api.DtaServerDTAServerListServicesHandler = d_t_a_server.DTAServerListServicesHandlerFunc(func(params d_t_a_server.DTAServerListServicesParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerListServices has not yet been implemented")
 		})
 	}
-	if api.DtaServerTransformDocumentHandler == nil {
-		api.DtaServerTransformDocumentHandler = d_t_a_server.TransformDocumentHandlerFunc(func(params d_t_a_server.TransformDocumentParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.TransformDocument has not yet been implemented")
+	if api.DtaServerDTAServerOptionsHandler == nil {
+		api.DtaServerDTAServerOptionsHandler = d_t_a_server.DTAServerOptionsHandlerFunc(func(params d_t_a_server.DTAServerOptionsParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerOptions has not yet been implemented")
 		})
 	}
-	if api.DtaServerTransformPipeHandler == nil {
-		api.DtaServerTransformPipeHandler = d_t_a_server.TransformPipeHandlerFunc(func(params d_t_a_server.TransformPipeParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.TransformPipe has not yet been implemented")
+	if api.DtaServerDTAServerTransformDocumentHandler == nil {
+		api.DtaServerDTAServerTransformDocumentHandler = d_t_a_server.DTAServerTransformDocumentHandlerFunc(func(params d_t_a_server.DTAServerTransformDocumentParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerTransformDocument has not yet been implemented")
+		})
+	}
+	if api.DtaServerDTAServerTransformPipeHandler == nil {
+		api.DtaServerDTAServerTransformPipeHandler = d_t_a_server.DTAServerTransformPipeHandlerFunc(func(params d_t_a_server.DTAServerTransformPipeParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerTransformPipe has not yet been implemented")
 		})
 	}
 

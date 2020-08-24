@@ -7,12 +7,16 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	sync "sync"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 
 	"github.com/carlescere/scheduler"
 	log "github.com/sirupsen/logrus"
+	aux "github.com/theovassiliou/doctrans/ipaux"
 	"github.com/theovassiliou/go-eureka-client/eureka"
 )
 
@@ -33,10 +37,13 @@ type DocTransServerGenericOptions struct {
 	Init     bool      `opts:"group=Generic" help:"Create a default config file as defined by cfg-file, if set. If not set ~/.dta/{AppName}/config.json will be created." json:"-"`
 }
 
-// DocTransServer is a generic server
-type DocTransServer struct {
-	UnimplementedDTAServerServer
+type IDocTransServer interface {
+	GetDocTransServer() GenDocTransServer
+	DTAServerServer
+}
 
+// GenDocTransServer is a generic server
+type GenDocTransServer struct {
 	AppName string `opts:"-"`
 	DtaType string `opts:"-"`
 	Proto   string `opts:"-"`
@@ -44,6 +51,7 @@ type DocTransServer struct {
 	registrar    *eureka.Client
 	instanceInfo *eureka.InstanceInfo
 	heartBeatJob *scheduler.Job
+	// UnimplementedDTAServerServer
 }
 
 //CreateListener creates the grpc listener and returns it
@@ -119,7 +127,7 @@ func MuxHTTPGrpc(ctx context.Context, httpListener net.Listener, grpcPort int) {
 }
 
 // ListServices implements dta.
-func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRequest) (*ListServicesResponse, error) {
+func (dtas *GenDocTransServer) ListServices(ctx context.Context, req *ListServiceRequest) (*ListServicesResponse, error) {
 	log.WithFields(log.Fields{"Service": dtas.ApplicationName(), "Status": "ListServices"}).Tracef("Service requested")
 	log.WithFields(log.Fields{"Service": dtas.ApplicationName(), "Status": "ListServices"}).Infof("In know only myself: %s", dtas.ApplicationName())
 	services := (&ListServicesResponse{}).Services
@@ -127,7 +135,91 @@ func (dtas *DocTransServer) ListServices(ctx context.Context, req *ListServiceRe
 	return &ListServicesResponse{Services: services}, nil
 }
 
+func (*GenDocTransServer) Options(context.Context, *OptionsRequest) (*OptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
+}
+func (*GenDocTransServer) TransformDocument(context.Context, *DocumentRequest) (*TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformDocument not implemented")
+}
+func (*GenDocTransServer) TransformPipe(context.Context, *TransformPipeRequest) (*TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
+}
+
 // ApplicationName returns the application name of the service
-func (dtas *DocTransServer) ApplicationName() string {
-	return appName
+func (dtas *GenDocTransServer) ApplicationName() string {
+	return dtas.AppName
+}
+
+func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, homepageURL string, d DocTransServerOptions) {
+	var gDTS, hDTS GenDocTransServer
+
+	var _httpListener net.Listener
+	var _httpPort int
+
+	// create GRPC Listener
+	// -- take initial port
+	_initialPort := d.Port
+	// -- start listener and save used grpc port
+	_grpcListener, _grpcPort := InitListener(_initialPort)
+	_ipAddressUsed, _ := aux.ExternalIP()
+
+	var registerGRPC, registerHTTP bool
+	if grpcGateway != nil {
+		registerGRPC = true
+		gDTS = grpcGateway.GetDocTransServer()
+		gDTS.NewInstanceInfo("grpc@"+d.HostName, appName, _ipAddressUsed, _grpcPort,
+			0, false, dtaType, "grpc",
+			homepageURL,
+			calcStatusURL(d.RegistrarURL, appName, "grpc@"+d.HostName),
+			"")
+	}
+
+	if httpGateway != nil {
+		registerHTTP = true
+		// create HTTP Listener (optional)
+		// -- take GRPC port + 1
+		// -- start listener and save used http port
+		_httpListener, _httpPort = InitListener(_grpcPort + 1)
+		hDTS = httpGateway.GetDocTransServer()
+		hDTS.NewInstanceInfo("http@"+d.HostName, appName, _ipAddressUsed, _httpPort,
+			0, false, dtaType, "http",
+			homepageURL,
+			calcStatusURL(d.RegistrarURL, appName, "http@"+d.HostName),
+			"")
+
+	}
+
+	var wg sync.WaitGroup
+
+	// Register at registrar
+	// -- Register service with GRPC protocol
+	log.Tracef("RegistrarURL: %s\n", d.RegistrarURL)
+	if registerGRPC && d.RegistrarURL != "" {
+		hDTS.RegisterAtRegistry(d.RegistrarURL)
+	}
+	if registerGRPC {
+		go StartGrpcServer(_grpcListener, grpcGateway)
+		CaptureSignals(grpcGateway, d.RegistrarURL, &wg)
+		wg.Add(1)
+	}
+
+	// -- Register service with HTTP protocol (optional)
+	if registerHTTP && d.RegistrarURL != "" {
+		hDTS.RegisterAtRegistry(d.RegistrarURL)
+	}
+
+	if registerHTTP {
+		ctx := context.Background()
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		go MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
+		CaptureSignals(httpGateway, d.RegistrarURL, &wg)
+		wg.Add(1)
+	}
+
+	wg.Wait()
+}
+
+func calcStatusURL(url, appName, instanceID string) string {
+	return url + "/apps/" + appName + "/" + instanceID
 }

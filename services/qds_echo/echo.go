@@ -8,6 +8,8 @@ import (
 	"github.com/jpillora/opts"
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
@@ -40,22 +42,23 @@ func calcStatusURL(url, appName, instanceId string) string {
 	return url + "/apps/" + appName + "/" + instanceId
 }
 
-func NewDtaService(options ServiceOptions, appName, proto string) DtaService {
+func NewDtaService(options ServiceOptions, appName, proto string) pb.IDocTransServer {
 	var gw = DtaService{
-		DocTransServer: pb.DocTransServer{
+		GenDocTransServer: pb.GenDocTransServer{
 			AppName: appName,
 			DtaType: dtaType,
 			Proto:   proto,
 		},
 	}
-	return gw
+	return &gw
 }
 
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
-	pb.DocTransServer
+	pb.GenDocTransServer
 	resolver *eureka.Client
 	listener net.Listener
+	pb.IDocTransServer
 }
 
 func main() {
@@ -100,14 +103,16 @@ func main() {
 	ipAddressUsed, _ := aux.ExternalIP()
 
 	grpcGateway := NewDtaService(serviceOptions, appName, "grpc")
-	grpcGateway.NewInstanceInfo("grpc@"+serviceOptions.HostName, appName, ipAddressUsed, _grpcPort,
+	gDTS := grpcGateway.GetDocTransServer()
+	gDTS.NewInstanceInfo("grpc@"+serviceOptions.HostName, appName, ipAddressUsed, _grpcPort,
 		0, false, dtaType, "grpc",
 		homepageURL,
 		calcStatusURL(serviceOptions.RegistrarURL, appName, "grpc@"+serviceOptions.HostName),
 		"")
 
 	httpGateway := NewDtaService(serviceOptions, appName, "http")
-	httpGateway.NewInstanceInfo("http@"+serviceOptions.HostName, appName, ipAddressUsed, _httpPort,
+	hDTS := httpGateway.GetDocTransServer()
+	hDTS.NewInstanceInfo("http@"+serviceOptions.HostName, appName, ipAddressUsed, _httpPort,
 		0, false, dtaType, "http",
 		homepageURL,
 		calcStatusURL(serviceOptions.RegistrarURL, appName, "http@"+serviceOptions.HostName),
@@ -119,17 +124,17 @@ func main() {
 	// -- Register service with GRPC protocol
 	log.Tracef("RegistrarURL: %s\n", serviceOptions.RegistrarURL)
 	if registerGRPC && serviceOptions.RegistrarURL != "" {
-		grpcGateway.RegisterAtRegistry(serviceOptions.RegistrarURL)
+		gDTS.RegisterAtRegistry(serviceOptions.RegistrarURL)
 	}
 	if registerGRPC {
-		go pb.StartGrpcServer(_grpcListener, &grpcGateway)
-		pb.CaptureSignals(&grpcGateway.DocTransServer, serviceOptions.RegistrarURL, &wg)
+		go pb.StartGrpcServer(_grpcListener, grpcGateway)
+		pb.CaptureSignals(grpcGateway, serviceOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 
 	// -- Register service with HTTP protocol (optional)
 	if registerHTTP && serviceOptions.RegistrarURL != "" {
-		httpGateway.RegisterAtRegistry(serviceOptions.RegistrarURL)
+		hDTS.RegisterAtRegistry(serviceOptions.RegistrarURL)
 	}
 
 	if registerHTTP {
@@ -137,7 +142,7 @@ func main() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go pb.MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
-		pb.CaptureSignals(&httpGateway.DocTransServer, serviceOptions.RegistrarURL, &wg)
+		pb.CaptureSignals(httpGateway, serviceOptions.RegistrarURL, &wg)
 		wg.Add(1)
 	}
 
@@ -183,6 +188,12 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
 
+}
+func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
+}
+func (*DtaService) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
 }
 
 func (s *DtaService) ApplicationName() string {

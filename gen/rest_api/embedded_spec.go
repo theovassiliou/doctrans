@@ -30,13 +30,13 @@ func init() {
     "version": "version not set"
   },
   "paths": {
-    "/v1/dta/document/transform": {
+    "/v1/document/transform": {
       "post": {
         "tags": [
           "DTAServer"
         ],
         "summary": "Request to transform a plain text document",
-        "operationId": "TransformDocument",
+        "operationId": "DTAServer_TransformDocument",
         "parameters": [
           {
             "name": "body",
@@ -53,16 +53,22 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         }
       }
     },
-    "/v1/dta/document/transform-pipe": {
+    "/v1/document/transform-pipe": {
       "post": {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "TransformPipe",
+        "operationId": "DTAServer_TransformPipe",
         "parameters": [
           {
             "name": "body",
@@ -79,21 +85,55 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         }
       }
     },
-    "/v1/dta/service/list": {
+    "/v1/service/list": {
       "get": {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "ListServices",
+        "operationId": "DTAServer_ListServices",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceListServicesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        }
+      }
+    },
+    "/v1/service/options": {
+      "get": {
+        "tags": [
+          "DTAServer"
+        ],
+        "operationId": "DTAServer_Options",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceOptionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -134,6 +174,14 @@ func init() {
         }
       }
     },
+    "dtaserviceOptionsResponse": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "string"
+        }
+      }
+    },
     "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
@@ -164,6 +212,39 @@ func init() {
           "items": {
             "$ref": "#/definitions/dtaserviceDocumentRequest"
           }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
         }
       }
     }
@@ -182,13 +263,13 @@ func init() {
     "version": "version not set"
   },
   "paths": {
-    "/v1/dta/document/transform": {
+    "/v1/document/transform": {
       "post": {
         "tags": [
           "DTAServer"
         ],
         "summary": "Request to transform a plain text document",
-        "operationId": "TransformDocument",
+        "operationId": "DTAServer_TransformDocument",
         "parameters": [
           {
             "name": "body",
@@ -205,16 +286,22 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         }
       }
     },
-    "/v1/dta/document/transform-pipe": {
+    "/v1/document/transform-pipe": {
       "post": {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "TransformPipe",
+        "operationId": "DTAServer_TransformPipe",
         "parameters": [
           {
             "name": "body",
@@ -231,21 +318,55 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         }
       }
     },
-    "/v1/dta/service/list": {
+    "/v1/service/list": {
       "get": {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "ListServices",
+        "operationId": "DTAServer_ListServices",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceListServicesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        }
+      }
+    },
+    "/v1/service/options": {
+      "get": {
+        "tags": [
+          "DTAServer"
+        ],
+        "operationId": "DTAServer_Options",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtaserviceOptionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -286,6 +407,14 @@ func init() {
         }
       }
     },
+    "dtaserviceOptionsResponse": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "string"
+        }
+      }
+    },
     "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
@@ -316,6 +445,39 @@ func init() {
           "items": {
             "$ref": "#/definitions/dtaserviceDocumentRequest"
           }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
         }
       }
     }

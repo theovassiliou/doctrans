@@ -9,11 +9,12 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DtaserviceTransformPipeRequest dtaservice transform pipe request
+//
 // swagger:model dtaserviceTransformPipeRequest
 type DtaserviceTransformPipeRequest struct {
 

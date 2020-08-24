@@ -38,16 +38,22 @@ func NewDtaserviceProtoAPI(spec *loads.Document) *DtaserviceProtoAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
-		DtaServerListServicesHandler: d_t_a_server.ListServicesHandlerFunc(func(params d_t_a_server.ListServicesParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.ListServices has not yet been implemented")
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
+		DtaServerDTAServerListServicesHandler: d_t_a_server.DTAServerListServicesHandlerFunc(func(params d_t_a_server.DTAServerListServicesParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerListServices has not yet been implemented")
 		}),
-		DtaServerTransformDocumentHandler: d_t_a_server.TransformDocumentHandlerFunc(func(params d_t_a_server.TransformDocumentParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.TransformDocument has not yet been implemented")
+		DtaServerDTAServerOptionsHandler: d_t_a_server.DTAServerOptionsHandlerFunc(func(params d_t_a_server.DTAServerOptionsParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerOptions has not yet been implemented")
 		}),
-		DtaServerTransformPipeHandler: d_t_a_server.TransformPipeHandlerFunc(func(params d_t_a_server.TransformPipeParams) middleware.Responder {
-			return middleware.NotImplemented("operation d_t_a_server.TransformPipe has not yet been implemented")
+		DtaServerDTAServerTransformDocumentHandler: d_t_a_server.DTAServerTransformDocumentHandlerFunc(func(params d_t_a_server.DTAServerTransformDocumentParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerTransformDocument has not yet been implemented")
+		}),
+		DtaServerDTAServerTransformPipeHandler: d_t_a_server.DTAServerTransformPipeHandlerFunc(func(params d_t_a_server.DTAServerTransformPipeParams) middleware.Responder {
+			return middleware.NotImplemented("operation d_t_a_server.DTAServerTransformPipe has not yet been implemented")
 		}),
 	}
 }
@@ -73,19 +79,23 @@ type DtaserviceProtoAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
 
-	// DtaServerListServicesHandler sets the operation handler for the list services operation
-	DtaServerListServicesHandler d_t_a_server.ListServicesHandler
-	// DtaServerTransformDocumentHandler sets the operation handler for the transform document operation
-	DtaServerTransformDocumentHandler d_t_a_server.TransformDocumentHandler
-	// DtaServerTransformPipeHandler sets the operation handler for the transform pipe operation
-	DtaServerTransformPipeHandler d_t_a_server.TransformPipeHandler
+	// DtaServerDTAServerListServicesHandler sets the operation handler for the d t a server list services operation
+	DtaServerDTAServerListServicesHandler d_t_a_server.DTAServerListServicesHandler
+	// DtaServerDTAServerOptionsHandler sets the operation handler for the d t a server options operation
+	DtaServerDTAServerOptionsHandler d_t_a_server.DTAServerOptionsHandler
+	// DtaServerDTAServerTransformDocumentHandler sets the operation handler for the d t a server transform document operation
+	DtaServerDTAServerTransformDocumentHandler d_t_a_server.DTAServerTransformDocumentHandler
+	// DtaServerDTAServerTransformPipeHandler sets the operation handler for the d t a server transform pipe operation
+	DtaServerDTAServerTransformPipeHandler d_t_a_server.DTAServerTransformPipeHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -152,16 +162,17 @@ func (o *DtaserviceProtoAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.DtaServerListServicesHandler == nil {
-		unregistered = append(unregistered, "DtaServer.ListServicesHandler")
+	if o.DtaServerDTAServerListServicesHandler == nil {
+		unregistered = append(unregistered, "d_t_a_server.DTAServerListServicesHandler")
 	}
-
-	if o.DtaServerTransformDocumentHandler == nil {
-		unregistered = append(unregistered, "DtaServer.TransformDocumentHandler")
+	if o.DtaServerDTAServerOptionsHandler == nil {
+		unregistered = append(unregistered, "d_t_a_server.DTAServerOptionsHandler")
 	}
-
-	if o.DtaServerTransformPipeHandler == nil {
-		unregistered = append(unregistered, "DtaServer.TransformPipeHandler")
+	if o.DtaServerDTAServerTransformDocumentHandler == nil {
+		unregistered = append(unregistered, "d_t_a_server.DTAServerTransformDocumentHandler")
+	}
+	if o.DtaServerDTAServerTransformPipeHandler == nil {
+		unregistered = append(unregistered, "d_t_a_server.DTAServerTransformPipeHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -178,16 +189,12 @@ func (o *DtaserviceProtoAPI) ServeErrorFor(operationID string) func(http.Respons
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *DtaserviceProtoAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *DtaserviceProtoAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -251,7 +258,6 @@ func (o *DtaserviceProtoAPI) Context() *middleware.Context {
 
 func (o *DtaserviceProtoAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -259,18 +265,19 @@ func (o *DtaserviceProtoAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/v1/dta/service/list"] = d_t_a_server.NewListServices(o.context, o.DtaServerListServicesHandler)
-
+	o.handlers["GET"]["/v1/service/list"] = d_t_a_server.NewDTAServerListServices(o.context, o.DtaServerDTAServerListServicesHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/service/options"] = d_t_a_server.NewDTAServerOptions(o.context, o.DtaServerDTAServerOptionsHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/v1/dta/document/transform"] = d_t_a_server.NewTransformDocument(o.context, o.DtaServerTransformDocumentHandler)
-
+	o.handlers["POST"]["/v1/document/transform"] = d_t_a_server.NewDTAServerTransformDocument(o.context, o.DtaServerDTAServerTransformDocumentHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/v1/dta/document/transform-pipe"] = d_t_a_server.NewTransformPipe(o.context, o.DtaServerTransformPipeHandler)
-
+	o.handlers["POST"]["/v1/document/transform-pipe"] = d_t_a_server.NewDTAServerTransformPipe(o.context, o.DtaServerDTAServerTransformPipeHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -299,4 +306,16 @@ func (o *DtaserviceProtoAPI) RegisterConsumer(mediaType string, consumer runtime
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *DtaserviceProtoAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *DtaserviceProtoAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

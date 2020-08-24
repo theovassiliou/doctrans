@@ -117,6 +117,24 @@ func local_request_DTAServer_TransformPipe_0(ctx context.Context, marshaler runt
 
 }
 
+func request_DTAServer_Options_0(ctx context.Context, marshaler runtime.Marshaler, client DTAServerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq OptionsRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.Options(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DTAServer_Options_0(ctx context.Context, marshaler runtime.Marshaler, server DTAServerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq OptionsRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.Options(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterDTAServerHandlerServer registers the http handlers for service DTAServer to "mux".
 // UnaryRPC     :call DTAServerServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -179,6 +197,26 @@ func RegisterDTAServerHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		}
 
 		forward_DTAServer_TransformPipe_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_DTAServer_Options_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DTAServer_Options_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DTAServer_Options_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -283,15 +321,37 @@ func RegisterDTAServerHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 
 	})
 
+	mux.Handle("GET", pattern_DTAServer_Options_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DTAServer_Options_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DTAServer_Options_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
 var (
-	pattern_DTAServer_TransformDocument_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "dta", "document", "transform"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DTAServer_TransformDocument_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "document", "transform"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DTAServer_ListServices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "dta", "service", "list"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DTAServer_ListServices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "service", "list"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DTAServer_TransformPipe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "dta", "document", "transform-pipe"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DTAServer_TransformPipe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "document", "transform-pipe"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_DTAServer_Options_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "service", "options"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -300,4 +360,6 @@ var (
 	forward_DTAServer_ListServices_0 = runtime.ForwardResponseMessage
 
 	forward_DTAServer_TransformPipe_0 = runtime.ForwardResponseMessage
+
+	forward_DTAServer_Options_0 = runtime.ForwardResponseMessage
 )

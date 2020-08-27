@@ -182,7 +182,7 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 
 	// Let's find out whether we find the server that can serve this service.
 	a, err := resolver.GetApplication(in.GetServiceName())
-	if err != nil || len(a.Instances) <= 0 {
+	if err != nil || len(a.Instances) == 0 {
 		log.Errorf("Couldn't find server for app %s", in.GetServiceName())
 		return &pb.TransformDocumentResponse{
 			TransDocument: []byte{},

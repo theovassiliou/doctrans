@@ -59,7 +59,7 @@ func CreateListener(port int, maxPortSeek int) (net.Listener, int) {
 		log.WithFields(log.Fields{"Service": "Server", "Status": "Trying"}).Infof("Trying to listen on port %d", (port + i))
 		lis, err = net.Listen("tcp", ":"+strconv.Itoa(port+i))
 		if err == nil {
-			port = port + i
+			port += i
 			log.WithFields(log.Fields{"Service": "Server", "Status": "Listening"}).Infof("Using port %d to listen for dta", port)
 			i = maxPortSeek
 		}

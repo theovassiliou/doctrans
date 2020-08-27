@@ -36,7 +36,7 @@ func Work(s *DtaService, input []byte, options []string) (string, []string, erro
 	text, err := html2text.FromString(string(input), html2text.Options{PrettyTables: true})
 	log.WithFields(log.Fields{"Service": "Work"}).Infof("The result %s\n", text)
 
-	return string(text), []string{}, err
+	return text, []string{}, err
 }
 
 // TransformDocument implements dtaservice.DTAServer

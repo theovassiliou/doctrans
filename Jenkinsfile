@@ -16,8 +16,6 @@ pipeline {
             environment {
                 CODECOV_TOKEN = credentials('codecov_token')
             }
-            steps {
-            }
         }
         stage('Code Analysis') {
             steps {

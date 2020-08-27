@@ -1,13 +1,10 @@
 package serviceimplementation
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
-	"regexp"
 
 	"jaytaylor.com/html2text"
 
@@ -30,15 +27,12 @@ type CountResults struct {
 	Words int
 }
 
-var re *regexp.Regexp = regexp.MustCompile(`[\S]+`)
-
 // Work returns an encoded JSON object containing the
 // bytes 	count the number of bytes
 // lines	count the numnber of lines
 // words		count the number of words
 // The Service returns  the number of lines, words, and bytes contained in the input document
 func Work(s *DtaService, input []byte, options []string) (string, []string, error) {
-
 	text, err := html2text.FromString(string(input), html2text.Options{PrettyTables: true})
 	log.WithFields(log.Fields{"Service": "Work"}).Infof("The result %s\n", text)
 
@@ -68,7 +62,6 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services := (&pb.ListServicesResponse{}).Services
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
-
 }
 
 func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
@@ -80,24 +73,6 @@ func (*DtaService) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResp
 
 func (s *DtaService) GetDocTransServer() pb.GenDocTransServer {
 	return s.GenDocTransServer
-}
-
-func counter(r io.Reader, sep []byte) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], sep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
-	}
 }
 
 func check(e error) {

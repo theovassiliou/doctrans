@@ -7,7 +7,6 @@ import (
 
 	"github.com/jpillora/opts"
 	"github.com/mitchellh/go-homedir"
-	"github.com/theovassiliou/go-eureka-client/eureka"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -38,8 +37,8 @@ type ServiceOptions struct {
 	pb.DocTransServerGenericOptions
 }
 
-func calcStatusURL(url, appName, instanceId string) string {
-	return url + "/apps/" + appName + "/" + instanceId
+func calcStatusURL(url, appName, instanceID string) string {
+	return url + "/apps/" + appName + "/" + instanceID
 }
 
 func NewDtaService(options ServiceOptions, appName, proto string) pb.IDocTransServer {
@@ -56,8 +55,6 @@ func NewDtaService(options ServiceOptions, appName, proto string) pb.IDocTransSe
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
 	pb.GenDocTransServer
-	resolver *eureka.Client
-	listener net.Listener
 	pb.IDocTransServer
 }
 
@@ -147,7 +144,6 @@ func main() {
 	}
 
 	wg.Wait()
-	return
 }
 
 func determineServerConfig(gwOptions ServiceOptions) (registerGRPC, registerHTTP bool) {
@@ -163,7 +159,6 @@ func determineServerConfig(gwOptions ServiceOptions) (registerGRPC, registerHTTP
 
 // TransformDocument
 func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
-
 	l, sOut, sErr := Work(req.GetDocument())
 	var errorS []string
 	if sErr != nil {
@@ -178,7 +173,6 @@ func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequ
 		TransOutput:   sOut,
 		Error:         errorS,
 	}, nil
-
 }
 
 func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
@@ -187,7 +181,6 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services := (&pb.ListServicesResponse{}).Services
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
-
 }
 func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")

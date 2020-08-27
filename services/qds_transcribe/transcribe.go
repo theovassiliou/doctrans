@@ -67,8 +67,6 @@ func main() {
 	}
 
 	dta.LaunchServices(&_grpcGateway, &_httpGateway, appName, dtaType, homepageURL, serviceOptions.DocTransServerOptions)
-
-	return
 }
 
 func newDtaService(options serviceCmdLineOptions, appName, proto string) service.DtaService {

@@ -11,7 +11,6 @@ import (
 
 // TransformDocument
 func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {
-
 	l, sOut, sErr := Work(s, req.GetDocument(), req.GetFileName())
 	var errorS []string
 	if sErr != nil {
@@ -26,7 +25,6 @@ func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequ
 		TransOutput:   sOut,
 		Error:         errorS,
 	}, nil
-
 }
 
 func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceRequest) (*pb.ListServicesResponse, error) {
@@ -35,7 +33,6 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services := (&pb.ListServicesResponse{}).Services
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
-
 }
 
 func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {

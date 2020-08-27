@@ -37,7 +37,6 @@ var re *regexp.Regexp = regexp.MustCompile(`[\S]+`)
 // words		count the number of words
 // The Service returns  the number of lines, words, and bytes contained in the input document
 func Work(s *DtaService, input []byte, options []string) (string, []string, error) {
-
 	b := len(input)
 	l, err := counter(bytes.NewReader(input), []byte{'\n'})
 	w := len(re.FindAllString(string(input), -1))
@@ -77,7 +76,6 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 	services := (&pb.ListServicesResponse{}).Services
 	services = append(services, s.ApplicationName())
 	return &pb.ListServicesResponse{Services: services}, nil
-
 }
 
 func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {

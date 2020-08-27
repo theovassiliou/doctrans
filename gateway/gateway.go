@@ -35,7 +35,6 @@ var resolver *eureka.Client
 type Gateway struct {
 	pb.UnimplementedDTAServerServer
 	pb.GenDocTransServer
-	listener net.Listener
 	pb.IDocTransServer
 }
 
@@ -59,8 +58,8 @@ type GatewayOptions struct {
 	pb.IDocTransServer
 }
 
-func calcStatusURL(url, appName, instanceId string) string {
-	return url + "/apps/" + appName + "/" + instanceId
+func calcStatusURL(url, appName, instanceID string) string {
+	return url + "/apps/" + appName + "/" + instanceID
 }
 
 func main() {
@@ -161,7 +160,6 @@ func main() {
 	}
 
 	wg.Wait()
-	return
 }
 
 func determineServerConfig(gwOptions GatewayOptions) (registerGRPC, registerHTTP bool) {
@@ -201,7 +199,8 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	c := pb.NewDTAServerClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	//	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	r, err := c.TransformDocument(ctx, in)

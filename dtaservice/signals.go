@@ -11,7 +11,7 @@ import (
 
 // CaptureSignals spans a signal handler for SIGINT and SIGTERM
 func CaptureSignals(server IDocTransServer, registerURL string, wg *sync.WaitGroup) {
-	signalCh := make(chan os.Signal)
+	signalCh := make(chan os.Signal, 5)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	go HandleSignals(server, signalCh, registerURL, wg)
 }

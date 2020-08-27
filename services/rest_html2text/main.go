@@ -15,10 +15,9 @@ import (
 	"jaytaylor.com/html2text"
 )
 
-var portFlag = flag.Int("port", 3000, "Port to run this service on")
+var portFlag = flag.Int("port", 60000, "Port to run this service on")
 
 func main() {
-
 	swaggerSpec, err := loads.Embedded(rest_api.SwaggerJSON, rest_api.FlatSwaggerJSON)
 	if err != nil {
 		log.Fatalln(err)
@@ -77,5 +76,4 @@ func main() {
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
-
 }

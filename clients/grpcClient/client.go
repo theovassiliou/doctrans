@@ -67,7 +67,6 @@ func check(e error) {
 const dtaGwID = "BERLIN.VASSILIOU-POHL.GW"
 
 func main() {
-
 	conf = config{
 		ServiceName: "DE.TU-BERLIN.QDS.HTML2TEXT",
 		EurekaURL:   "http://localhost:8761/eureka",

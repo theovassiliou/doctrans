@@ -15,7 +15,7 @@ func (dtas *GenDocTransServer) InstanceInfo() *eureka.InstanceInfo {
 
 func (dtas *GenDocTransServer) UnregisterAtRegistry() {
 	if dtas.instanceInfo != nil {
-		dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
+		_ = dtas.registrar.UnregisterInstance(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // unregister the instance in your eureka(s)
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("Unregister service %s with id %s", dtas.instanceInfo.App, dtas.instanceInfo.InstanceID)
 	} else {
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Unregister"}).Infof("service %s allready unregistered", dtas.instanceInfo.App)
@@ -34,14 +34,14 @@ func (dtas *GenDocTransServer) RegisterAtRegistry(registerURL string) {
 	// Create the app instance
 
 	// Register instance and heartbeat for Eureka
-	dtas.registrar.RegisterInstance(dtas.instanceInfo.App, dtas.instanceInfo) // Register new instance in your eureka(s)
+	_ = dtas.registrar.RegisterInstance(dtas.instanceInfo.App, dtas.instanceInfo) // Register new instance in your eureka(s)
 	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Infof("Registering service %s\n", dtas.instanceInfo.App)
 	log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Init"}).Tracef("InstanceInfo %v\n", dtas.instanceInfo)
 
 	job := func() {
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Up"}).Tracef("sending heartbeat : %v\n", time.Now().UTC())
 		log.WithFields(log.Fields{"Service": "->Registrar", "Status": "Upt"}).Tracef("InstanceInfo %v\n", dtas.instanceInfo)
-		dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
+		_ = dtas.registrar.SendHeartbeat(dtas.instanceInfo.App, dtas.instanceInfo.HostName) // say to eureka that your app is alive (here you must send heartbeat before 30 sec)
 	}
 
 	// Run every 25 seconds but not now.

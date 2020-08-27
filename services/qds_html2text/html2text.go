@@ -66,14 +66,10 @@ func main() {
 	}
 
 	dta.LaunchServices(_grpcGateway, _httpGateway, appName, dtaType, homepageURL, serviceOptions.DocTransServerOptions)
-
-	return
 }
 
 func newDtaService(options serviceCmdLineOptions, appName, proto string) dta.IDocTransServer {
-	var gw service.DtaService
-
-	gw = service.DtaService{
+	gw := service.DtaService{
 		GenDocTransServer: dta.GenDocTransServer{
 			AppName: appName,
 			DtaType: dtaType,

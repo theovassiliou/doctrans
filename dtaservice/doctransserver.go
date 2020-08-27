@@ -20,10 +20,6 @@ import (
 	"github.com/theovassiliou/go-eureka-client/eureka"
 )
 
-const (
-	appName = "DE.TU-BERLIN.QDS.ABSTRACT-SERVER"
-)
-
 type DocTransServerOptions struct {
 	GRPC         bool   `opts:"group=Protocols" help:"Start service only with GRPC protocol support, if set"`
 	HTTP         bool   `opts:"group=Protocols" help:"Start service only with HTTP protocol support, if set"`
@@ -112,11 +108,11 @@ func MuxHTTPGrpc(ctx context.Context, httpListener net.Listener, grpcPort int) {
 	// FIXME Continue here and pull the handler out. Remember to change this in all services
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {
-		io.Copy(w, strings.NewReader("The service is alive"))
+		_, _ = io.Copy(w, strings.NewReader("The service is alive"))
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
-		io.Copy(w, strings.NewReader("The service is healthy as it is responding."))
+		_, _ = io.Copy(w, strings.NewReader("The service is healthy as it is responding."))
 	})
 
 	mux.Handle("/", gwmux)
@@ -189,8 +185,7 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 			0, false, dtaType, "http",
 			homepageURL,
 			calcStatusURL(d.HostName+":"+strconv.Itoa(_httpPort)),
-			"")
-
+			calcHealthURL(d.HostName+":"+strconv.Itoa(_httpPort)))
 	}
 
 	var wg sync.WaitGroup

@@ -397,7 +397,7 @@
             },
             "example": [
               "transforming document <simpletext.txt> ..."
-            ],
+            ]
           },
           "error": {
             "type": "array",
@@ -407,7 +407,7 @@
             },
             "example": [
               "Unknown Exception"
-            ],
+            ]
           },
           "last_transformer": {
             "type": "string",

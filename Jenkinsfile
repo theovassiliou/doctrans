@@ -24,7 +24,11 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 sh 'curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12.5'
-                sh 'golangci-lint run'
+                sh 'golangci-lint run v -j 4 -E deadcode -E depguard -E dogsled \
+              -E errcheck -E goconst -E golint -E gosec -E gosimple -E govet -E exportloopref -E whitespace \
+              -E goprintffuncname'
+              sh 'golangci-lint run -v -j 4 -E ineffassign -E gocritic -E nakedret \
+              -E rowserrcheck -E staticcheck -E structcheck -E typecheck -E unconvert -E unused -E varcheck'
             }
         }
         stage('Release') {

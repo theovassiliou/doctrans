@@ -81,7 +81,7 @@ func CreateListener(port int, maxPortSeek int) (net.Listener, int) {
 func InitListener(initialPort int) (net.Listener, int) {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
-	_configuredPort := initialPort
+	// _configuredPort := initialPort
 	lis, _configuredPort := CreateListener(initialPort, maxPortSeek) // for the service
 
 	if _configuredPort != initialPort {

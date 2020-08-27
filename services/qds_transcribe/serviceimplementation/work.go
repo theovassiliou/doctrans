@@ -128,7 +128,7 @@ func Work(s *DtaService, input []byte, fileName string) (string, []string, error
 			// handle error
 		}
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 
 		var f TranscribeJobResult
 		json.Unmarshal(body, &f)

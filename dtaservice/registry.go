@@ -86,8 +86,8 @@ func (dtas *GenDocTransServer) NewInstanceInfo(hostName, app, ip string, port in
 	instanceInfo.Metadata = &eureka.MetaData{
 		Map: make(map[string]string),
 	}
-	instanceInfo.Metadata.Map["DTA-Type"] = dtaType //one of Gateway, Service
-	instanceInfo.Metadata.Map["DTA-Proto"] = proto
+	instanceInfo.Metadata.Map["dtaType"] = dtaType //one of Gateway, Service
+	instanceInfo.Metadata.Map["dtaProto"] = proto
 	instanceInfo.HomePageUrl = homePageURL
 	instanceInfo.StatusPageUrl = statusURL
 	instanceInfo.HealthCheckUrl = healthURL

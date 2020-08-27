@@ -112,7 +112,11 @@ func MuxHTTPGrpc(ctx context.Context, httpListener net.Listener, grpcPort int) {
 	// FIXME Continue here and pull the handler out. Remember to change this in all services
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {
-		io.Copy(w, strings.NewReader("This is a test"))
+		io.Copy(w, strings.NewReader("The service is alive"))
+	})
+
+	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+		io.Copy(w, strings.NewReader("The service is healthy as it is responding."))
 	})
 
 	mux.Handle("/", gwmux)
@@ -167,10 +171,10 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	if grpcGateway != nil {
 		registerGRPC = true
 		gDTS = grpcGateway.GetDocTransServer()
-		gDTS.NewInstanceInfo("grpc@"+d.HostName, appName, _ipAddressUsed, _grpcPort,
+		gDTS.NewInstanceInfo(calcHostName("grpc", d.HostName), appName, _ipAddressUsed, _grpcPort,
 			0, false, dtaType, "grpc",
 			homepageURL,
-			calcStatusURL(d.RegistrarURL, appName, "grpc@"+d.HostName),
+			"",
 			"")
 	}
 
@@ -181,10 +185,10 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 		// -- start listener and save used http port
 		_httpListener, _httpPort = InitListener(_grpcPort + 1)
 		hDTS = httpGateway.GetDocTransServer()
-		hDTS.NewInstanceInfo("http@"+d.HostName, appName, _ipAddressUsed, _httpPort,
+		hDTS.NewInstanceInfo(calcHostName("http", d.HostName), appName, _ipAddressUsed, _httpPort,
 			0, false, dtaType, "http",
 			homepageURL,
-			calcStatusURL(d.RegistrarURL, appName, "http@"+d.HostName),
+			calcStatusURL(d.HostName+":"+strconv.Itoa(_httpPort)),
 			"")
 
 	}
@@ -195,7 +199,7 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	// -- Register service with GRPC protocol
 	log.Tracef("RegistrarURL: %s\n", d.RegistrarURL)
 	if registerGRPC && d.RegistrarURL != "" {
-		hDTS.RegisterAtRegistry(d.RegistrarURL)
+		gDTS.RegisterAtRegistry(d.RegistrarURL)
 	}
 	if registerGRPC {
 		go StartGrpcServer(_grpcListener, grpcGateway)
@@ -220,6 +224,14 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	wg.Wait()
 }
 
-func calcStatusURL(url, appName, instanceID string) string {
-	return url + "/apps/" + appName + "/" + instanceID
+func calcHostName(proto, hostName string) string {
+	return proto + "://" + hostName
+}
+
+func calcStatusURL(instanceID string) string {
+	return "http://" + instanceID + "/status"
+}
+
+func calcHealthURL(instanceID string) string {
+	return "http://" + instanceID + "/health"
 }

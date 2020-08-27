@@ -138,6 +138,7 @@ func local_request_DTAServer_Options_0(ctx context.Context, marshaler runtime.Ma
 // RegisterDTAServerHandlerServer registers the http handlers for service DTAServer to "mux".
 // UnaryRPC     :call DTAServerServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterDTAServerHandlerFromEndpoint instead.
 func RegisterDTAServerHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DTAServerServer) error {
 
 	mux.Handle("POST", pattern_DTAServer_TransformDocument_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

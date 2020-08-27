@@ -1,6 +1,6 @@
 // This file is safe to edit. Once it exists it will not be overwritten
 
-package rest_api
+package rest_api // nolint
 
 import (
 	"crypto/tls"

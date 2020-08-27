@@ -25,7 +25,7 @@ func main() {
 
 	api := operations.NewDtaserviceProtoAPI(swaggerSpec)
 	server := rest_api.NewServer(api)
-	defer server.Shutdown()
+	defer server.Shutdown() // nolint
 
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "dtaservice.proto"

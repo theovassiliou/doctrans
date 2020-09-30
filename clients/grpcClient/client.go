@@ -40,6 +40,7 @@ import (
 
 	"github.com/theovassiliou/go-eureka-client/eureka"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -145,9 +146,9 @@ func main() {
 		fmt.Println(strings.Join(r.GetServices(), "\n"))
 		os.Exit(0)
 	}
-
+	var header metadata.MD
 	options := []string{}
-	r, err := c.TransformDocument(ctx, &pb.DocumentRequest{ServiceName: conf.ServiceName, FileName: conf.FileName, Document: doc, Options: options})
+	r, err := c.TransformDocument(ctx, &pb.DocumentRequest{ServiceName: conf.ServiceName, FileName: conf.FileName, Document: doc, Options: options}, grpc.Header(&header))
 	if err != nil {
 		log.Fatalf("could not transform: %v", err)
 	} else if r.GetError() != nil {
@@ -155,4 +156,5 @@ func main() {
 		return
 	}
 	fmt.Println(string(r.GetTransDocument()))
+	fmt.Printf("Received-Header: %#v", header)
 }

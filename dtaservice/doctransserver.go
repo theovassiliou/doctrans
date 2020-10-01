@@ -220,7 +220,7 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 }
 
 func calcHostName(proto, hostName string) string {
-	return proto + "://" + hostName
+	return proto + "@" + hostName
 }
 
 func calcStatusURL(instanceID string) string {

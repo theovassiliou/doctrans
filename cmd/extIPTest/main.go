@@ -13,10 +13,7 @@ type Config struct {
 }
 
 func main() {
-
-	var p1 Config
-
-	p1 = Config{}
+	p1 := Config{}
 
 	opts.New(&p1).
 		UserConfigPath().
@@ -26,5 +23,4 @@ func main() {
 	fmt.Println(p1.Foo)
 	fmt.Println(p1.Bar)
 	fmt.Println(p1.Joe)
-
 }

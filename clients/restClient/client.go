@@ -51,14 +51,7 @@ type config struct {
 	Port     string    `help:"Port to be used"`
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func main() {
-
 	conf = config{
 		Port:     "3000",
 		LogLevel: log.TraceLevel,

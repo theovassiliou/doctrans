@@ -9,13 +9,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/ArthurHlt/go-eureka-client/eureka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -28,8 +26,6 @@ import (
 type DtaService struct {
 	pb.UnimplementedDTAServerServer
 	pb.GenDocTransServer
-	resolver              *eureka.Client
-	listener              net.Listener
 	AWSRegion             string
 	AWSCredentialFileName string
 	AWSCredentialProfile  string
@@ -42,8 +38,6 @@ func check(e error) {
 		log.Errorln(e)
 	}
 }
-
-var sess *session.Session
 
 // Work uses AWS service to transcribe an audio
 func Work(s *DtaService, input []byte, fileName string) (string, []string, error) {
@@ -96,7 +90,6 @@ func Work(s *DtaService, input []byte, fileName string) (string, []string, error
 			case ts.ErrCodeConflictException:
 				log.Traceln("Transcribing with jobName:", jobName)
 				log.Debugln("Job already exists. No need to redo. Reusing results")
-				break
 			default:
 				log.Traceln("Transcribing with jobName:", jobName)
 				log.Debugf("Error occured on starting Transcription. %s", err.Error())
@@ -122,16 +115,14 @@ func Work(s *DtaService, input []byte, fileName string) (string, []string, error
 	}
 
 	if j.TranscriptionJob.Transcript.TranscriptFileUri != nil {
-
 		resp, err := http.Get(*j.TranscriptionJob.Transcript.TranscriptFileUri)
-		if err != nil {
-			// handle error
+		if err == nil {
+			defer resp.Body.Close()
 		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 
 		var f TranscribeJobResult
-		json.Unmarshal(body, &f)
+		_ = json.Unmarshal(body, &f)
 		if f.Results.Transcripts != nil {
 			var b strings.Builder
 			for _, trans := range f.Results.Transcripts {
@@ -142,7 +133,6 @@ func Work(s *DtaService, input []byte, fileName string) (string, []string, error
 		return string(body), []string{}, nil
 	}
 	return "", nil, nil
-
 }
 
 func ExecuteWorkerLocally(s DtaService, fileName string, additionalInfo bool) {
@@ -174,9 +164,9 @@ func calcRessourceName(input []byte, fileName string, theJob *ts.StartTranscript
 		return fileName
 	}
 	h := hmac.New(sha256.New, []byte("P4HG#BjA3S85"))
-	h.Write(input)
+	_, _ = h.Write(input)
 	b, _ := json.Marshal(*theJob)
-	h.Write(b)
+	_, _ = h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 

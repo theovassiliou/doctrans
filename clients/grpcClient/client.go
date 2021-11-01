@@ -68,7 +68,6 @@ func check(e error) {
 const dtaGwID = "BERLIN.VASSILIOU-POHL.GW"
 
 func main() {
-
 	conf = config{
 		ServiceName: "DE.TU-BERLIN.QDS.HTML2TEXT",
 		EurekaURL:   "http://localhost:8761/eureka",
@@ -103,7 +102,7 @@ func main() {
 		// Let's find out whether we find the server serving this service.
 		//  - ask for the service
 		eService, err := client.GetApplication(conf.ServiceName)
-		if err != nil || len(eService.Instances) <= 0 {
+		if err != nil || len(eService.Instances) == 0 {
 			log.Infof("Could not find the service %s at eureka\n", conf.ServiceName)
 		} else {
 			conf.ServiceAddress = eService.Instances[0].IpAddr + ":" + eService.Instances[0].Port.Port
@@ -113,7 +112,7 @@ func main() {
 			log.Infof("Looking for a gateway %s \n", dtaGwID)
 
 			gService, err := client.GetApplication(dtaGwID)
-			if err != nil || len(gService.Instances) <= 0 {
+			if err != nil || len(gService.Instances) == 0 {
 				log.Infof("Could not find a gateway %s at eureka\n", dtaGwID)
 			} else {
 				conf.ServiceAddress = gService.Instances[0].IpAddr + ":" + gService.Instances[0].Port.Port
@@ -144,7 +143,7 @@ func main() {
 			log.Fatalf("could not list services: %v", err)
 		}
 
-		fmt.Println(string(strings.Join(r.GetServices(), "\n")))
+		fmt.Println(strings.Join(r.GetServices(), "\n"))
 		os.Exit(0)
 	}
 

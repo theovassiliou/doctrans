@@ -1,10 +1,7 @@
 package main
 
+// A simple implemenation of using the Golang DocTrans Framework
 import (
-	"context"
-	"net"
-	"sync"
-
 	"github.com/jpillora/opts"
 	"github.com/mitchellh/go-homedir"
 	"github.com/theovassiliou/go-eureka-client/eureka"
@@ -13,9 +10,11 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"jaytaylor.com/html2text"
 
+
 	log "github.com/sirupsen/logrus"
-	pb "github.com/theovassiliou/doctrans/dtaservice"
+	dta "github.com/theovassiliou/doctrans/dtaservice"
 	aux "github.com/theovassiliou/doctrans/ipaux"
+	service "github.com/theovassiliou/doctrans/services/qds_html2text/serviceimplementation"
 )
 
 var version = ".1"
@@ -67,7 +66,7 @@ func main() {
 	workingHomeDir, _ := homedir.Dir()
 	homepageURL := "https://github.com/theovassiliou/doctrans/blob/master/gateway/README.md"
 
-	serviceOptions := ServiceOptions{}
+	serviceOptions := serviceCmdLineOptions{}
 	serviceOptions.CfgFile = workingHomeDir + "/.dta/" + appName + "/config.json"
 	serviceOptions.LogLevel = log.WarnLevel
 	serviceOptions.HostName = aux.GetHostname()
@@ -83,76 +82,41 @@ func main() {
 		log.SetLevel(serviceOptions.LogLevel)
 	}
 
+	if serviceOptions.LocalExecution != "" {
+		s := service.DtaService{}
+		s.AppName = appName
+
+		service.ExecuteWorkerLocally(s, serviceOptions.LocalExecution)
+		return
+	}
+
+	var _grpcGateway, _httpGateway dta.IDocTransServer
 	// Calc Configuration
 	registerGRPC, registerHTTP := determineServerConfig(serviceOptions)
-
-	var _httpListener net.Listener
-	var _httpPort int
-
-	// create GRPC Listener
-	// -- take initial port
-	_initialPort := serviceOptions.Port
-	// -- start listener and save used grpc port
-	_grpcListener, _grpcPort := pb.InitListener(_initialPort)
-
-	// create HTTP Listener (optional)
-	if registerHTTP {
-		// -- take GRPC port + 1
-		// -- start listener and save used http port
-		_httpListener, _httpPort = pb.InitListener(_grpcPort + 1)
-	}
-
-	ipAddressUsed, _ := aux.ExternalIP()
-
-	grpcGateway := NewDtaService(serviceOptions, appName, "grpc")
-	gDTS := grpcGateway.GetDocTransServer()
-	gDTS.NewInstanceInfo("grpc@"+serviceOptions.HostName, appName, ipAddressUsed, _grpcPort,
-		0, false, dtaType, "grpc",
-		homepageURL,
-		calcStatusURL(serviceOptions.RegistrarURL, appName, "grpc@"+serviceOptions.HostName),
-		"")
-
-	httpGateway := NewDtaService(serviceOptions, appName, "http")
-	hDTS := httpGateway.GetDocTransServer()
-	hDTS.NewInstanceInfo("http@"+serviceOptions.HostName, appName, ipAddressUsed, _httpPort,
-		0, false, dtaType, "http",
-		homepageURL,
-		calcStatusURL(serviceOptions.RegistrarURL, appName, "http@"+serviceOptions.HostName),
-		"")
-
-	var wg sync.WaitGroup
-
-	// Register at registrar
-	// -- Register service with GRPC protocol
-	log.Tracef("RegistrarURL: %s\n", serviceOptions.RegistrarURL)
-	if registerGRPC && serviceOptions.RegistrarURL != "" {
-		gDTS.RegisterAtRegistry(serviceOptions.RegistrarURL)
-	}
 	if registerGRPC {
-		go pb.StartGrpcServer(_grpcListener, grpcGateway)
-		pb.CaptureSignals(grpcGateway, serviceOptions.RegistrarURL, &wg)
-		wg.Add(1)
+		_grpcGateway = newDtaService(serviceOptions, appName, "grpc")
 	}
-
-	// -- Register service with HTTP protocol (optional)
-	if registerHTTP && serviceOptions.RegistrarURL != "" {
-		hDTS.RegisterAtRegistry(serviceOptions.RegistrarURL)
-	}
-
 	if registerHTTP {
-		ctx := context.Background()
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-		go pb.MuxHTTPGrpc(ctx, _httpListener, _grpcPort)
-		pb.CaptureSignals(httpGateway, serviceOptions.RegistrarURL, &wg)
-		wg.Add(1)
+		_httpGateway = newDtaService(serviceOptions, appName, "http")
 	}
 
-	wg.Wait()
-	return
+	dta.LaunchServices(_grpcGateway, _httpGateway, appName, dtaType, homepageURL, serviceOptions.DocTransServerOptions)
 }
 
-func determineServerConfig(gwOptions ServiceOptions) (registerGRPC, registerHTTP bool) {
+func newDtaService(options serviceCmdLineOptions, appName, proto string) dta.IDocTransServer {
+	gw := service.DtaService{
+		GenDocTransServer: dta.GenDocTransServer{
+			AppName: appName,
+			DtaType: dtaType,
+			Proto:   proto,
+		},
+	}
+	gw.AppName = appName
+
+	return &gw
+}
+
+func determineServerConfig(gwOptions serviceCmdLineOptions) (registerGRPC, registerHTTP bool) {
 	if (!gwOptions.HTTP && !gwOptions.GRPC) || gwOptions.GRPC {
 		registerGRPC = true
 	}
@@ -162,6 +126,7 @@ func determineServerConfig(gwOptions ServiceOptions) (registerGRPC, registerHTTP
 	}
 	return
 }
+
 
 // TransformDocument implements dtaservice.DTAServer
 func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentRequest) (*pb.TransformDocumentResponse, error) {

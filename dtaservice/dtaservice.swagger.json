@@ -22,20 +22,11 @@
           "service"
         ],
         "summary": "Retrieves available options of the service.",
-        "description": "The response **must** be a valid [JSON Schema](http://json-schema.org/draft-07/schema#).",
+        "description": "The response **has to** be a valid [JSON Schema](http://json-schema.org/draft-07/schema#).",
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Invalid Schema",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OptionsErrorResponse"
-                }
-              }
-            }
+            "description": "OK",
+            "type": "object"
           },
           "504": {
             "description": "Gateway Timeout",
@@ -178,6 +169,7 @@
           "document"
         ],
         "summary": "Executes a given sequence of transforms on a plain document.",
+        "description": "The services inside the list (`[0, 1, ..., n]`) **has to** be handled in ascending order from the first (`0`) to the last (`n`) element.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -195,6 +187,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TransformDocumentPipeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error (from called service)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionsErrorResponse"
                 }
               }
             }
@@ -326,9 +328,6 @@
           },
           "options": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
             "description": "Service options.",
             "example": {
               "offset": 5,
@@ -338,9 +337,13 @@
         }
       },
       "PipeService": {
+       "required": [
+          "name"
+        ],
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "example": "DE.TU-BERLIN.QDS.COUNT"
           },
           "options": {
             "type": "object"
@@ -368,6 +371,7 @@
           },
           "file_name": {
             "type": "string",
+            "example": "simpletext.txt",
             "description": "The filename of the document."
           }
         }
@@ -390,17 +394,24 @@
             "description": "Standard output from the specified service.",
             "items": {
               "type": "string"
-            }
+            },
+            "example": [
+              "transforming document <simpletext.txt> ..."
+            ]
           },
           "error": {
             "type": "array",
             "description": "Standard error from the specified service.",
             "items": {
               "type": "string"
-            }
+            },
+            "example": [
+              "Unknown Exception"
+            ]
           },
           "last_transformer": {
             "type": "string",
+            "example": "DE.TU-BERLIN.QDS.COUNT",
             "description": "Name of the last service which transformed the document."
           }
         }

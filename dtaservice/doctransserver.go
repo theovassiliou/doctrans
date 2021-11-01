@@ -20,10 +20,6 @@ import (
 	"github.com/theovassiliou/go-eureka-client/eureka"
 )
 
-const (
-	appName = "DE.TU-BERLIN.QDS.ABSTRACT-SERVER"
-)
-
 type DocTransServerOptions struct {
 	GRPC         bool   `opts:"group=Protocols" help:"Start service only with GRPC protocol support, if set"`
 	HTTP         bool   `opts:"group=Protocols" help:"Start service only with HTTP protocol support, if set"`
@@ -63,7 +59,7 @@ func CreateListener(port int, maxPortSeek int) (net.Listener, int) {
 		log.WithFields(log.Fields{"Service": "Server", "Status": "Trying"}).Infof("Trying to listen on port %d", (port + i))
 		lis, err = net.Listen("tcp", ":"+strconv.Itoa(port+i))
 		if err == nil {
-			port = port + i
+			port += i
 			log.WithFields(log.Fields{"Service": "Server", "Status": "Listening"}).Infof("Using port %d to listen for dta", port)
 			i = maxPortSeek
 		}
@@ -81,7 +77,7 @@ func CreateListener(port int, maxPortSeek int) (net.Listener, int) {
 func InitListener(initialPort int) (net.Listener, int) {
 	// We first create the listener to know the dynamically allocated port we listen on
 	const maxPortSeek int = 20
-	_configuredPort := initialPort
+	// _configuredPort := initialPort
 	lis, _configuredPort := CreateListener(initialPort, maxPortSeek) // for the service
 
 	if _configuredPort != initialPort {
@@ -112,7 +108,11 @@ func MuxHTTPGrpc(ctx context.Context, httpListener net.Listener, grpcPort int) {
 	// FIXME Continue here and pull the handler out. Remember to change this in all services
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {
-		io.Copy(w, strings.NewReader("This is a test"))
+		_, _ = io.Copy(w, strings.NewReader("The service is alive"))
+	})
+
+	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+		_, _ = io.Copy(w, strings.NewReader("The service is healthy as it is responding."))
 	})
 
 	mux.Handle("/", gwmux)
@@ -167,10 +167,10 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	if grpcGateway != nil {
 		registerGRPC = true
 		gDTS = grpcGateway.GetDocTransServer()
-		gDTS.NewInstanceInfo("grpc@"+d.HostName, appName, _ipAddressUsed, _grpcPort,
+		gDTS.NewInstanceInfo(calcHostName("grpc", d.HostName), appName, _ipAddressUsed, _grpcPort,
 			0, false, dtaType, "grpc",
 			homepageURL,
-			calcStatusURL(d.RegistrarURL, appName, "grpc@"+d.HostName),
+			"",
 			"")
 	}
 
@@ -181,12 +181,11 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 		// -- start listener and save used http port
 		_httpListener, _httpPort = InitListener(_grpcPort + 1)
 		hDTS = httpGateway.GetDocTransServer()
-		hDTS.NewInstanceInfo("http@"+d.HostName, appName, _ipAddressUsed, _httpPort,
+		hDTS.NewInstanceInfo(calcHostName("http", d.HostName), appName, _ipAddressUsed, _httpPort,
 			0, false, dtaType, "http",
 			homepageURL,
-			calcStatusURL(d.RegistrarURL, appName, "http@"+d.HostName),
-			"")
-
+			calcStatusURL(d.HostName+":"+strconv.Itoa(_httpPort)),
+			calcHealthURL(d.HostName+":"+strconv.Itoa(_httpPort)))
 	}
 
 	var wg sync.WaitGroup
@@ -195,7 +194,7 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	// -- Register service with GRPC protocol
 	log.Tracef("RegistrarURL: %s\n", d.RegistrarURL)
 	if registerGRPC && d.RegistrarURL != "" {
-		hDTS.RegisterAtRegistry(d.RegistrarURL)
+		gDTS.RegisterAtRegistry(d.RegistrarURL)
 	}
 	if registerGRPC {
 		go StartGrpcServer(_grpcListener, grpcGateway)
@@ -220,6 +219,14 @@ func LaunchServices(grpcGateway, httpGateway IDocTransServer, appName, dtaType, 
 	wg.Wait()
 }
 
-func calcStatusURL(url, appName, instanceID string) string {
-	return url + "/apps/" + appName + "/" + instanceID
+func calcHostName(proto, hostName string) string {
+	return proto + "://" + hostName
+}
+
+func calcStatusURL(instanceID string) string {
+	return "http://" + instanceID + "/status"
+}
+
+func calcHealthURL(instanceID string) string {
+	return "http://" + instanceID + "/health"
 }

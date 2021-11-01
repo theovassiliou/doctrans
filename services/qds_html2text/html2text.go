@@ -10,6 +10,7 @@ import (
 	"github.com/theovassiliou/go-eureka-client/eureka"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 	"jaytaylor.com/html2text"
 
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ const (
 )
 
 // Work returns a nicely formatted text from a HTML input
-func Work(input []byte, options []string) (string, []string, error) {
+func Work(input []byte, options *structpb.Struct) (string, []string, error) {
 	text, err := html2text.FromString(string(input), html2text.Options{PrettyTables: true})
 	return string(text), []string{}, err
 }
@@ -173,9 +174,9 @@ func (s *DtaService) TransformDocument(ctx context.Context, docReq *pb.DocumentR
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Transformation Result: %s", transResult)
 
 	return &pb.TransformDocumentResponse{
-		TransDocument: []byte(transResult),
-		TransOutput:   stdOut,
-		Error:         errorS,
+		Document: []byte(transResult),
+		Output:   stdOut,
+		Error:    errorS,
 	}, nil
 }
 
@@ -189,9 +190,10 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 }
 
-func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+func (*DtaService) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformPipeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
 }
+
 func (*DtaService) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
 }

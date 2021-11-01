@@ -36,7 +36,7 @@ func init() {
           "DTAServer"
         ],
         "summary": "Request to transform a plain text document",
-        "operationId": "DTAServer_TransformDocument",
+        "operationId": "TransformDocument",
         "parameters": [
           {
             "name": "body",
@@ -53,12 +53,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         }
       }
@@ -68,7 +62,7 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_TransformPipe",
+        "operationId": "TransformPipe",
         "parameters": [
           {
             "name": "body",
@@ -83,13 +77,7 @@ func init() {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/dtaserviceTransformPipeResponse"
             }
           }
         }
@@ -100,18 +88,12 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_ListServices",
+        "operationId": "ListServices",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceListServicesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -122,18 +104,12 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_Options",
+        "operationId": "Options",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceOptionsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -153,10 +129,7 @@ func init() {
           "type": "string"
         },
         "options": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "object"
         },
         "service_name": {
           "type": "string"
@@ -182,21 +155,32 @@ func init() {
         }
       }
     },
+    "dtaservicePipeService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
     "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
       "properties": {
+        "document": {
+          "type": "string",
+          "format": "byte"
+        },
         "error": {
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "trans_document": {
-          "type": "string",
-          "format": "byte"
-        },
-        "trans_output": {
+        "output": {
           "type": "array",
           "items": {
             "type": "string"
@@ -207,46 +191,52 @@ func init() {
     "dtaserviceTransformPipeRequest": {
       "type": "object",
       "properties": {
-        "pipe": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dtaserviceDocumentRequest"
-          }
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
+        "document": {
           "type": "string",
           "format": "byte"
+        },
+        "file_name": {
+          "type": "string"
+        },
+        "pipeService": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dtaservicePipeService"
+          }
         }
       }
     },
-    "runtimeError": {
+    "dtaserviceTransformPipeResponse": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
+        "document": {
+          "type": "string",
+          "format": "byte"
         },
         "error": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "last_transformer": {
           "type": "string"
         },
-        "message": {
-          "type": "string"
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
+    },
+    "protobufNullValue": {
+      "description": "` + "`" + `NullValue` + "`" + ` is a singleton enumeration to represent the null value for the\n` + "`" + `Value` + "`" + ` type union.\n\n The JSON representation for ` + "`" + `NullValue` + "`" + ` is JSON ` + "`" + `null` + "`" + `.\n\n - NULL_VALUE: Null value.",
+      "type": "string",
+      "default": "NULL_VALUE",
+      "enum": [
+        "NULL_VALUE"
+      ]
     }
   }
 }`))
@@ -269,7 +259,7 @@ func init() {
           "DTAServer"
         ],
         "summary": "Request to transform a plain text document",
-        "operationId": "DTAServer_TransformDocument",
+        "operationId": "TransformDocument",
         "parameters": [
           {
             "name": "body",
@@ -286,12 +276,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         }
       }
@@ -301,7 +285,7 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_TransformPipe",
+        "operationId": "TransformPipe",
         "parameters": [
           {
             "name": "body",
@@ -316,13 +300,7 @@ func init() {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dtaserviceTransformDocumentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/dtaserviceTransformPipeResponse"
             }
           }
         }
@@ -333,18 +311,12 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_ListServices",
+        "operationId": "ListServices",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceListServicesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -355,18 +327,12 @@ func init() {
         "tags": [
           "DTAServer"
         ],
-        "operationId": "DTAServer_Options",
+        "operationId": "Options",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/dtaserviceOptionsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         }
@@ -386,10 +352,7 @@ func init() {
           "type": "string"
         },
         "options": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "object"
         },
         "service_name": {
           "type": "string"
@@ -415,21 +378,32 @@ func init() {
         }
       }
     },
+    "dtaservicePipeService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
     "dtaserviceTransformDocumentResponse": {
       "type": "object",
       "title": "The response message containing the transformed message",
       "properties": {
+        "document": {
+          "type": "string",
+          "format": "byte"
+        },
         "error": {
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "trans_document": {
-          "type": "string",
-          "format": "byte"
-        },
-        "trans_output": {
+        "output": {
           "type": "array",
           "items": {
             "type": "string"
@@ -440,46 +414,52 @@ func init() {
     "dtaserviceTransformPipeRequest": {
       "type": "object",
       "properties": {
-        "pipe": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dtaserviceDocumentRequest"
-          }
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
+        "document": {
           "type": "string",
           "format": "byte"
+        },
+        "file_name": {
+          "type": "string"
+        },
+        "pipeService": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dtaservicePipeService"
+          }
         }
       }
     },
-    "runtimeError": {
+    "dtaserviceTransformPipeResponse": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
+        "document": {
+          "type": "string",
+          "format": "byte"
         },
         "error": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "last_transformer": {
           "type": "string"
         },
-        "message": {
-          "type": "string"
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
+    },
+    "protobufNullValue": {
+      "description": "` + "`" + `NullValue` + "`" + ` is a singleton enumeration to represent the null value for the\n` + "`" + `Value` + "`" + ` type union.\n\n The JSON representation for ` + "`" + `NullValue` + "`" + ` is JSON ` + "`" + `null` + "`" + `.\n\n - NULL_VALUE: Null value.",
+      "type": "string",
+      "default": "NULL_VALUE",
+      "enum": [
+        "NULL_VALUE"
+      ]
     }
   }
 }`))

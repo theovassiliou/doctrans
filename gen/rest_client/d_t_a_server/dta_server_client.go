@@ -6,6 +6,8 @@ package d_t_a_server
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -25,147 +27,151 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DTAServerListServices(params *DTAServerListServicesParams) (*DTAServerListServicesOK, error)
+	ListServices(params *ListServicesParams) (*ListServicesOK, error)
 
-	DTAServerOptions(params *DTAServerOptionsParams) (*DTAServerOptionsOK, error)
+	Options(params *OptionsParams) (*OptionsOK, error)
 
-	DTAServerTransformDocument(params *DTAServerTransformDocumentParams) (*DTAServerTransformDocumentOK, error)
+	TransformDocument(params *TransformDocumentParams) (*TransformDocumentOK, error)
 
-	DTAServerTransformPipe(params *DTAServerTransformPipeParams) (*DTAServerTransformPipeOK, error)
+	TransformPipe(params *TransformPipeParams) (*TransformPipeOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DTAServerListServices d t a server list services API
+  ListServices list services API
 */
-func (a *Client) DTAServerListServices(params *DTAServerListServicesParams) (*DTAServerListServicesOK, error) {
+func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDTAServerListServicesParams()
+		params = NewListServicesParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DTAServer_ListServices",
+		ID:                 "ListServices",
 		Method:             "GET",
 		PathPattern:        "/v1/service/list",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DTAServerListServicesReader{formats: a.formats},
+		Reader:             &ListServicesReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DTAServerListServicesOK)
+	success, ok := result.(*ListServicesOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*DTAServerListServicesDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ListServices: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-  DTAServerOptions d t a server options API
+  Options options API
 */
-func (a *Client) DTAServerOptions(params *DTAServerOptionsParams) (*DTAServerOptionsOK, error) {
+func (a *Client) Options(params *OptionsParams) (*OptionsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDTAServerOptionsParams()
+		params = NewOptionsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DTAServer_Options",
+		ID:                 "Options",
 		Method:             "GET",
 		PathPattern:        "/v1/service/options",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DTAServerOptionsReader{formats: a.formats},
+		Reader:             &OptionsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DTAServerOptionsOK)
+	success, ok := result.(*OptionsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*DTAServerOptionsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for Options: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-  DTAServerTransformDocument requests to transform a plain text document
+  TransformDocument requests to transform a plain text document
 */
-func (a *Client) DTAServerTransformDocument(params *DTAServerTransformDocumentParams) (*DTAServerTransformDocumentOK, error) {
+func (a *Client) TransformDocument(params *TransformDocumentParams) (*TransformDocumentOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDTAServerTransformDocumentParams()
+		params = NewTransformDocumentParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DTAServer_TransformDocument",
+		ID:                 "TransformDocument",
 		Method:             "POST",
 		PathPattern:        "/v1/document/transform",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DTAServerTransformDocumentReader{formats: a.formats},
+		Reader:             &TransformDocumentReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DTAServerTransformDocumentOK)
+	success, ok := result.(*TransformDocumentOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*DTAServerTransformDocumentDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for TransformDocument: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-  DTAServerTransformPipe d t a server transform pipe API
+  TransformPipe transform pipe API
 */
-func (a *Client) DTAServerTransformPipe(params *DTAServerTransformPipeParams) (*DTAServerTransformPipeOK, error) {
+func (a *Client) TransformPipe(params *TransformPipeParams) (*TransformPipeOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDTAServerTransformPipeParams()
+		params = NewTransformPipeParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DTAServer_TransformPipe",
+		ID:                 "TransformPipe",
 		Method:             "POST",
 		PathPattern:        "/v1/document/transform-pipe",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DTAServerTransformPipeReader{formats: a.formats},
+		Reader:             &TransformPipeReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DTAServerTransformPipeOK)
+	success, ok := result.(*TransformPipeOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*DTAServerTransformPipeDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for TransformPipe: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 // SetTransport changes the transport on the client

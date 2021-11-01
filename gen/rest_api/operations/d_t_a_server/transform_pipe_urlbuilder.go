@@ -11,15 +11,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// DTAServerListServicesURL generates an URL for the d t a server list services operation
-type DTAServerListServicesURL struct {
+// TransformPipeURL generates an URL for the transform pipe operation
+type TransformPipeURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DTAServerListServicesURL) WithBasePath(bp string) *DTAServerListServicesURL {
+func (o *TransformPipeURL) WithBasePath(bp string) *TransformPipeURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,15 +27,15 @@ func (o *DTAServerListServicesURL) WithBasePath(bp string) *DTAServerListService
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DTAServerListServicesURL) SetBasePath(bp string) {
+func (o *TransformPipeURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *DTAServerListServicesURL) Build() (*url.URL, error) {
+func (o *TransformPipeURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/v1/service/list"
+	var _path = "/v1/document/transform-pipe"
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
@@ -44,7 +44,7 @@ func (o *DTAServerListServicesURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *DTAServerListServicesURL) Must(u *url.URL, err error) *url.URL {
+func (o *TransformPipeURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -55,17 +55,17 @@ func (o *DTAServerListServicesURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *DTAServerListServicesURL) String() string {
+func (o *TransformPipeURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *DTAServerListServicesURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *TransformPipeURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on DTAServerListServicesURL")
+		return nil, errors.New("scheme is required for a full url on TransformPipeURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on DTAServerListServicesURL")
+		return nil, errors.New("host is required for a full url on TransformPipeURL")
 	}
 
 	base, err := o.Build()
@@ -79,6 +79,6 @@ func (o *DTAServerListServicesURL) BuildFull(scheme, host string) (*url.URL, err
 }
 
 // StringFull returns the string representation of a complete url
-func (o *DTAServerListServicesURL) StringFull(scheme, host string) string {
+func (o *TransformPipeURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

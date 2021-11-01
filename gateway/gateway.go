@@ -187,9 +187,9 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	if err != nil || len(a.Instances) <= 0 {
 		log.Errorf("Couldn't find server for app %s", in.GetServiceName())
 		return &pb.TransformDocumentResponse{
-			TransDocument: []byte{},
-			TransOutput:   []string{},
-			Error:         []string{"Could not find service", "Service requested: " + in.GetServiceName()},
+			Document: []byte{},
+			Output:   []string{},
+			Error:    []string{"Could not find service", "Service requested: " + in.GetServiceName()},
 		}, nil
 	}
 	log.WithFields(log.Fields{"Service": dtas.AppName, "Status": "TransformDocument"}).Debugf("Connecting to: %s:%s", a.Instances[0].IpAddr, a.Instances[0].Port.Port)
@@ -208,7 +208,7 @@ func (dtas *Gateway) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	if err != nil {
 		log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "TransformDocument"}).Fatalf("Failed to transform: %s", err.Error())
 	}
-	log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "TransformDocumentResult"}).Tracef("%s\n", string(r.GetTransDocument()))
+	log.WithFields(log.Fields{"Service": dtas.GenDocTransServer.AppName, "Status": "TransformDocumentResult"}).Tracef("%s\n", string(r.GetDocument()))
 
 	return r, err
 }
@@ -227,9 +227,10 @@ func (dtas *Gateway) ListServices(ctx context.Context, req *pb.ListServiceReques
 	return &pb.ListServicesResponse{Services: services}, nil
 }
 
-func (*Gateway) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+func (*Gateway) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformPipeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
 }
+
 func (*Gateway) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
 }

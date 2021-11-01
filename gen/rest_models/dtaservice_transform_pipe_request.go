@@ -9,24 +9,30 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DtaserviceTransformPipeRequest dtaservice transform pipe request
-//
 // swagger:model dtaserviceTransformPipeRequest
 type DtaserviceTransformPipeRequest struct {
 
-	// pipe
-	Pipe []*DtaserviceDocumentRequest `json:"pipe"`
+	// document
+	// Format: byte
+	Document strfmt.Base64 `json:"document,omitempty"`
+
+	// file name
+	FileName string `json:"file_name,omitempty"`
+
+	// pipe service
+	PipeService []*DtaservicePipeService `json:"pipeService"`
 }
 
 // Validate validates this dtaservice transform pipe request
 func (m *DtaserviceTransformPipeRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validatePipe(formats); err != nil {
+	if err := m.validatePipeService(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -36,21 +42,21 @@ func (m *DtaserviceTransformPipeRequest) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *DtaserviceTransformPipeRequest) validatePipe(formats strfmt.Registry) error {
+func (m *DtaserviceTransformPipeRequest) validatePipeService(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Pipe) { // not required
+	if swag.IsZero(m.PipeService) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Pipe); i++ {
-		if swag.IsZero(m.Pipe[i]) { // not required
+	for i := 0; i < len(m.PipeService); i++ {
+		if swag.IsZero(m.PipeService[i]) { // not required
 			continue
 		}
 
-		if m.Pipe[i] != nil {
-			if err := m.Pipe[i].Validate(formats); err != nil {
+		if m.PipeService[i] != nil {
+			if err := m.PipeService[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("pipe" + "." + strconv.Itoa(i))
+					return ve.ValidateName("pipeService" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

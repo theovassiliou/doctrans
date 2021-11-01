@@ -9,6 +9,7 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	_ "github.com/mwitkow/go-proto-validators"
+	_ "github.com/golang/protobuf/ptypes/struct"
 	github_com_mwitkow_go_proto_validators "github.com/mwitkow/go-proto-validators"
 )
 
@@ -20,6 +21,11 @@ var _ = math.Inf
 func (this *DocumentRequest) Validate() error {
 	if this.ServiceName == "" {
 		return github_com_mwitkow_go_proto_validators.FieldError("ServiceName", fmt.Errorf(`value '%v' must not be an empty string`, this.ServiceName))
+	}
+	if this.Options != nil {
+		if err := github_com_mwitkow_go_proto_validators.CallValidatorIfExists(this.Options); err != nil {
+			return github_com_mwitkow_go_proto_validators.FieldError("Options", err)
+		}
 	}
 	return nil
 }
@@ -38,13 +44,24 @@ func (this *ListServicesResponse) Validate() error {
 func (this *OptionsResponse) Validate() error {
 	return nil
 }
+func (this *PipeService) Validate() error {
+	if this.Options != nil {
+		if err := github_com_mwitkow_go_proto_validators.CallValidatorIfExists(this.Options); err != nil {
+			return github_com_mwitkow_go_proto_validators.FieldError("Options", err)
+		}
+	}
+	return nil
+}
 func (this *TransformPipeRequest) Validate() error {
-	for _, item := range this.Pipe {
+	for _, item := range this.PipeService {
 		if item != nil {
 			if err := github_com_mwitkow_go_proto_validators.CallValidatorIfExists(item); err != nil {
-				return github_com_mwitkow_go_proto_validators.FieldError("Pipe", err)
+				return github_com_mwitkow_go_proto_validators.FieldError("PipeService", err)
 			}
 		}
 	}
+	return nil
+}
+func (this *TransformPipeResponse) Validate() error {
 	return nil
 }

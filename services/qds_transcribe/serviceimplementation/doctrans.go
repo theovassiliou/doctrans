@@ -22,9 +22,9 @@ func (s *DtaService) TransformDocument(ctx context.Context, req *pb.DocumentRequ
 	log.WithFields(log.Fields{"Service": s.ApplicationName(), "Status": "TransformDocument"}).Tracef("Received document: %s and echoing", string(req.GetDocument()))
 
 	return &pb.TransformDocumentResponse{
-		TransDocument: []byte(l),
-		TransOutput:   sOut,
-		Error:         errorS,
+		Document: []byte(l),
+		Output:   sOut,
+		Error:    errorS,
 	}, nil
 
 }
@@ -38,9 +38,10 @@ func (s *DtaService) ListServices(ctx context.Context, req *pb.ListServiceReques
 
 }
 
-func (*DtaService) TransformPipe(context.Context, *pb.TransformPipeRequest) (*pb.TransformDocumentResponse, error) {
+func (*DtaService) TransformPipe(ctx context.Context, req *pb.TransformPipeRequest) (*pb.TransformPipeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransformPipe not implemented")
 }
+
 func (*DtaService) Options(context.Context, *pb.OptionsRequest) (*pb.OptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Options not implemented")
 }

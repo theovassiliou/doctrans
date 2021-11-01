@@ -12,18 +12,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-// NewDTAServerListServicesParams creates a new DTAServerListServicesParams object
+// NewListServicesParams creates a new ListServicesParams object
 // no default values defined in spec.
-func NewDTAServerListServicesParams() DTAServerListServicesParams {
+func NewListServicesParams() ListServicesParams {
 
-	return DTAServerListServicesParams{}
+	return ListServicesParams{}
 }
 
-// DTAServerListServicesParams contains all the bound params for the d t a server list services operation
+// ListServicesParams contains all the bound params for the list services operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters DTAServer_ListServices
-type DTAServerListServicesParams struct {
+// swagger:parameters ListServices
+type ListServicesParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -32,8 +32,8 @@ type DTAServerListServicesParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewDTAServerListServicesParams() beforehand.
-func (o *DTAServerListServicesParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewListServicesParams() beforehand.
+func (o *ListServicesParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

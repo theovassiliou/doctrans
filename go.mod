@@ -3,7 +3,6 @@ module github.com/theovassiliou/doctrans
 go 1.13
 
 require (
-	github.com/ArthurHlt/go-eureka-client v1.1.0
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/aws/aws-sdk-go v1.30.26
 	github.com/carlescere/scheduler v0.0.0-20170109141437-ee74d2f83d82

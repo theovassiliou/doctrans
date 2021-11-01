@@ -6,12 +6,11 @@ package rest_models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DtaserviceDocumentRequest The request message containing the document to be transformed
-//
 // swagger:model dtaserviceDocumentRequest
 type DtaserviceDocumentRequest struct {
 
@@ -23,7 +22,7 @@ type DtaserviceDocumentRequest struct {
 	FileName string `json:"file_name,omitempty"`
 
 	// options
-	Options []string `json:"options"`
+	Options interface{} `json:"options,omitempty"`
 
 	// service name
 	ServiceName string `json:"service_name,omitempty"`

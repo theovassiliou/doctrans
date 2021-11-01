@@ -3,7 +3,6 @@ module github.com/theovassiliou/doctrans
 go 1.13
 
 require (
-	github.com/ArthurHlt/go-eureka-client v1.1.0
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/aws/aws-sdk-go v1.30.26
 	github.com/carlescere/scheduler v0.0.0-20170109141437-ee74d2f83d82
@@ -13,9 +12,10 @@ require (
 	github.com/go-openapi/spec v0.19.7
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9
-	github.com/go-openapi/validate v0.19.8 // indirect
-	github.com/golang/protobuf v1.4.2
-	github.com/grpc-ecosystem/grpc-gateway v1.14.7
+	github.com/go-openapi/validate v0.19.8
+	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/golang/protobuf v1.4.1
+	github.com/grpc-ecosystem/grpc-gateway v1.14.5
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jpillora/opts v1.1.2

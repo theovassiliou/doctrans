@@ -40,6 +40,7 @@ import (
 
 	"github.com/theovassiliou/go-eureka-client/eureka"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -146,7 +147,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	options := []string{}
+	options := &structpb.Struct{}
 	r, err := c.TransformDocument(ctx, &pb.DocumentRequest{ServiceName: conf.ServiceName, FileName: conf.FileName, Document: doc, Options: options})
 	if err != nil {
 		log.Fatalf("could not transform: %v", err)
@@ -154,5 +155,5 @@ func main() {
 		fmt.Println(strings.Join(r.GetError(), "\n"))
 		return
 	}
-	fmt.Println(string(r.GetTransDocument()))
+	fmt.Println(string(r.GetDocument()))
 }

@@ -10,9 +10,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// DtaserviceTransformDocumentResponse The response message containing the transformed message
-// swagger:model dtaserviceTransformDocumentResponse
-type DtaserviceTransformDocumentResponse struct {
+// DtaserviceTransformPipeResponse dtaservice transform pipe response
+// swagger:model dtaserviceTransformPipeResponse
+type DtaserviceTransformPipeResponse struct {
 
 	// document
 	// Format: byte
@@ -21,17 +21,20 @@ type DtaserviceTransformDocumentResponse struct {
 	// error
 	Error []string `json:"error"`
 
+	// last transformer
+	LastTransformer string `json:"last_transformer,omitempty"`
+
 	// output
 	Output []string `json:"output"`
 }
 
-// Validate validates this dtaservice transform document response
-func (m *DtaserviceTransformDocumentResponse) Validate(formats strfmt.Registry) error {
+// Validate validates this dtaservice transform pipe response
+func (m *DtaserviceTransformPipeResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DtaserviceTransformDocumentResponse) MarshalBinary() ([]byte, error) {
+func (m *DtaserviceTransformPipeResponse) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -39,8 +42,8 @@ func (m *DtaserviceTransformDocumentResponse) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DtaserviceTransformDocumentResponse) UnmarshalBinary(b []byte) error {
-	var res DtaserviceTransformDocumentResponse
+func (m *DtaserviceTransformPipeResponse) UnmarshalBinary(b []byte) error {
+	var res DtaserviceTransformPipeResponse
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

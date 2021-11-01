@@ -16,18 +16,18 @@ import (
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
-// NewDTAServerTransformPipeParams creates a new DTAServerTransformPipeParams object
+// NewTransformPipeParams creates a new TransformPipeParams object
 // no default values defined in spec.
-func NewDTAServerTransformPipeParams() DTAServerTransformPipeParams {
+func NewTransformPipeParams() TransformPipeParams {
 
-	return DTAServerTransformPipeParams{}
+	return TransformPipeParams{}
 }
 
-// DTAServerTransformPipeParams contains all the bound params for the d t a server transform pipe operation
+// TransformPipeParams contains all the bound params for the transform pipe operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters DTAServer_TransformPipe
-type DTAServerTransformPipeParams struct {
+// swagger:parameters TransformPipe
+type TransformPipeParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -42,8 +42,8 @@ type DTAServerTransformPipeParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewDTAServerTransformPipeParams() beforehand.
-func (o *DTAServerTransformPipeParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewTransformPipeParams() beforehand.
+func (o *TransformPipeParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

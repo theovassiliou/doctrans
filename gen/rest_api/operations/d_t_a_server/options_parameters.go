@@ -12,18 +12,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-// NewDTAServerOptionsParams creates a new DTAServerOptionsParams object
+// NewOptionsParams creates a new OptionsParams object
 // no default values defined in spec.
-func NewDTAServerOptionsParams() DTAServerOptionsParams {
+func NewOptionsParams() OptionsParams {
 
-	return DTAServerOptionsParams{}
+	return OptionsParams{}
 }
 
-// DTAServerOptionsParams contains all the bound params for the d t a server options operation
+// OptionsParams contains all the bound params for the options operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters DTAServer_Options
-type DTAServerOptionsParams struct {
+// swagger:parameters Options
+type OptionsParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -32,8 +32,8 @@ type DTAServerOptionsParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewDTAServerOptionsParams() beforehand.
-func (o *DTAServerOptionsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewOptionsParams() beforehand.
+func (o *OptionsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

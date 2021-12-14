@@ -1,0 +1,34 @@
+@startuml Jenkins UseCases
+
+Title: Use Case Relations
+
+Developer --> (Edit Code)
+Developer --> (Commit Code)
+
+:Release Manager: --> (Tag Release)
+:Release Manager: --> (Trigger\nRelease Build)
+
+newpage
+Title: Use Case Descriptions
+
+usecase edit as "Edit Code
+--
+Locally editing, testing, and 
+offline commiting (no push)."
+
+usecase commit as "Commit Code
+--
+Pushing locally commit changes to 
+MASTER branch to remote repo."
+
+usecase tag as "Tag Release
+--
+Tagging current code status with a 
+version number on the remote repo."
+
+usecase release as "Trigger Release Build
+--
+Trigger the build of a release on 
+the CI/CD tool"
+
+@enduml

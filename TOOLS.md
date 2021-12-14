@@ -53,3 +53,7 @@ rehash
 
 - [Docker](https://www.docker.com/)
     To build and deploy services
+
+# Services used
+
+- <https://api.ipify.org> Rational:[6. Determine the public IP addresss](0005-inventory-of-used-libraries-and-tools.md) 

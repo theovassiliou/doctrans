@@ -24,6 +24,7 @@ type DocTransServerOptions struct {
 	GRPC         bool   `opts:"group=Protocols" help:"Start service only with GRPC protocol support, if set"`
 	HTTP         bool   `opts:"group=Protocols" help:"Start service only with HTTP protocol support, if set"`
 	Port         int    `opts:"group=Protocols" help:"On which port (starting point) to listen for the supported protocol(s)."`
+	XInstanceID  string `opts:"group=Protocols" help:"Used as instance identifcation on request, if set.""` // my instance ID
 	HostName     string `opts:"group=Service" help:"If provided will be used as hostname, else automatically derived."`
 	RegistrarURL string `opts:"group=Registrar" help:"Registry URL (ex http://eureka:8761/eureka)"`
 }
@@ -40,9 +41,10 @@ type IDocTransServer interface {
 
 // GenDocTransServer is a generic server
 type GenDocTransServer struct {
-	AppName string `opts:"-"`
-	DtaType string `opts:"-"`
-	Proto   string `opts:"-"`
+	AppName     string `opts:"-"`
+	DtaType     string `opts:"-"`
+	Proto       string `opts:"-"`
+	XInstanceID string `opts:"instance-id"` // my instance ID
 
 	registrar    *eureka.Client
 	instanceInfo *eureka.InstanceInfo

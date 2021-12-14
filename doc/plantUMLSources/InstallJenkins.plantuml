@@ -1,0 +1,28 @@
+@startuml Jenkins installation
+
+start
+partition "Installing jenkins server as docker" {
+    :Create docker-compose file;  
+    floating note left
+        Taken from: 
+        https://dev.to/andresfmoya/install-jenkins-using-docker-compose-4cab
+    end note
+    :mkdir ~/jenkins;
+    :Modified docker-compose.yml;
+    note right
+        With this we installed the LTS version. 
+        In my case this was: Jenkins 2.235.5
+    end note
+    :docker-compose up -d;
+    :docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword;
+    :Launch http://localhost:8081;
+ }
+ partition "Configuring jenkins" {
+    :Installed recommended plugins;
+    :Create admin account;
+    :Note jenkins instance "http://localhost:8081/";
+ }
+
+
+@enduml
+

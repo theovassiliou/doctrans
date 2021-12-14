@@ -105,7 +105,7 @@ func main() {
 		if err != nil || len(eService.Instances) == 0 {
 			log.Infof("Could not find the service %s at eureka\n", conf.ServiceName)
 		} else {
-			conf.ServiceAddress = eService.Instances[0].IpAddr + ":" + eService.Instances[0].Port.Port
+			conf.ServiceAddress = eService.Instances[1].IpAddr + ":" + eService.Instances[1].Port.Port
 		}
 		//  - if service is unknown ask for a gateway
 		if conf.ServiceAddress == "" {
@@ -156,5 +156,5 @@ func main() {
 		return
 	}
 	fmt.Println(string(r.GetTransDocument()))
-	fmt.Printf("Received-Header: %#v", header)
+	fmt.Printf("Received-Header: %#v\n", header)
 }

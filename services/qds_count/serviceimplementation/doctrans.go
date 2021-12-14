@@ -12,7 +12,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/theovassiliou/doctrans/dtaservice"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -58,10 +60,14 @@ func (s *DtaService) TransformDocument(ctx context.Context, in *pb.DocumentReque
 	var errorS []string
 	if sErr != nil {
 		errorS = []string{sErr.Error()}
-	} else {
-		errorS = []string{}
 	}
+
 	log.WithFields(log.Fields{"Service": "count", "Status": "TransformDocument"}).Tracef("Received document: %s and has lines %s", string(in.GetDocument()), l)
+	// create and send header
+	if s.XInstanceID != "" {
+		header := metadata.Pairs("X-Instance-ID", s.XInstanceID)
+		grpc.SendHeader(ctx, header)
+	}
 
 	return &pb.TransformDocumentResponse{
 		TransDocument: []byte(l),

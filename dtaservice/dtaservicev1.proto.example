@@ -1,0 +1,109 @@
+// MIT License
+//
+// Copyright (c) 2019 Theofanis Vassiliou-Gioles
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+syntax = "proto3";
+
+package morpho;
+
+import "google/api/annotations.proto";
+// import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+
+// The DTA service definition.
+service MorphoService {
+  // Request to transform a plain text document
+  rpc TransformDocument (TransformDocumentRequest) returns (TransformDocumentResponse) {
+       option (google.api.http) = {
+        post: "/v1/document/transform"
+        body: "*"
+      };
+  }
+  rpc ListServices (google.protobuf.Empty) returns (ListServicesResponse) {
+    option (google.api.http) = {
+      get: "/v1/service/list"
+    };
+  }
+  rpc TransformDocumentPipe (TransformDocumentPipeRequest) returns (TransformDocumentResponse) {
+    option (google.api.http) = {
+      post: "/v1/document/transform-pipe"
+      body: "*"
+    };
+  }
+}
+
+
+
+message TransformDocumentResponse {
+  bytes document = 1;
+  repeated string output = 2;
+  repeated string error = 3;
+}
+
+// The request message containing the document to be transformed
+message TransformDocumentRequest {
+  bytes document = 1;
+  string service_name = 2;
+  string file_name = 3;
+  google.protobuf.Struct options = 4;
+}
+
+// The response message containing the transformed message
+
+
+message ListServiceResponse {
+  message ListServiceInfo {
+    string name = 1;
+    string version = 2;
+    google.protobuf.Struct options = 3;
+  }
+  repeated ListServiceInfo services = 1;
+}
+
+message ListServicesResponse {
+  message ServiceInfo {
+    string name = 1;
+    string version = 2;
+    google.protobuf.Struct options = 3;    
+  }
+  repeated string services = 1;
+}
+
+message PipeService {
+  string name = 1;
+  google.protobuf.Struct options = 2;
+}
+
+message TransformDocumentPipeRequest {
+  string document = 1;
+  string service_name = 2;
+  string file_name = 3;
+  google.protobuf.Struct options = 4;
+  repeated PipeService services = 5;
+}
+
+message TransformDocumentPipeResponse {
+  string document = 1;
+  string output = 2;
+  string error = 3;
+  string sender = 4;
+}

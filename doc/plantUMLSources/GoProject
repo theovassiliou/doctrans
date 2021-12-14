@@ -1,0 +1,6 @@
+
+@startuml Go project build
+floating note left
+    https://bmuschko.com/blog/go-on-jenkins/
+end note
+@enduml

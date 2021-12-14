@@ -1,0 +1,19 @@
+
+@startuml Go project build
+floating note left
+    https://bmuschko.com/blog/go-on-jenkins/
+end note
+|Jenkins|
+start
+    :Install Go plugin ;
+    :Configured Go plugin to use 1.14.3 
+    my current installation;
+|codecov.io|
+    :Created User at codecov.io;
+    :Created API Key;
+|Jenkins|
+    :Added API Key to Jenkins credentials;
+    :Created Pipeline;
+end
+
+@enduml

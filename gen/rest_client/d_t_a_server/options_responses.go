@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
@@ -30,9 +29,8 @@ func (o *OptionsReader) ReadResponse(response runtime.ClientResponse, consumer r
 			return nil, err
 		}
 		return result, nil
-
 	default:
-		return nil, runtime.NewAPIError("unknown error", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /v1/service/options] Options", response, response.Code())
 	}
 }
 
@@ -41,7 +39,8 @@ func NewOptionsOK() *OptionsOK {
 	return &OptionsOK{}
 }
 
-/*OptionsOK handles this case with default header values.
+/*
+OptionsOK describes a response with status code 200, with default header values.
 
 A successful response.
 */
@@ -49,7 +48,41 @@ type OptionsOK struct {
 	Payload *rest_models.DtaserviceOptionsResponse
 }
 
+// IsSuccess returns true when this options o k response has a 2xx status code
+func (o *OptionsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this options o k response has a 3xx status code
+func (o *OptionsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this options o k response has a 4xx status code
+func (o *OptionsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this options o k response has a 5xx status code
+func (o *OptionsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this options o k response a status code equal to that given
+func (o *OptionsOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the options o k response
+func (o *OptionsOK) Code() int {
+	return 200
+}
+
 func (o *OptionsOK) Error() string {
+	return fmt.Sprintf("[GET /v1/service/options][%d] optionsOK  %+v", 200, o.Payload)
+}
+
+func (o *OptionsOK) String() string {
 	return fmt.Sprintf("[GET /v1/service/options][%d] optionsOK  %+v", 200, o.Payload)
 }
 

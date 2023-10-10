@@ -25,29 +25,31 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientOption is the option for Client methods
+type ClientOption func(*runtime.ClientOperation)
+
 // ClientService is the interface for Client methods
 type ClientService interface {
-	ListServices(params *ListServicesParams) (*ListServicesOK, error)
+	ListServices(params *ListServicesParams, opts ...ClientOption) (*ListServicesOK, error)
 
-	Options(params *OptionsParams) (*OptionsOK, error)
+	Options(params *OptionsParams, opts ...ClientOption) (*OptionsOK, error)
 
-	TransformDocument(params *TransformDocumentParams) (*TransformDocumentOK, error)
+	TransformDocument(params *TransformDocumentParams, opts ...ClientOption) (*TransformDocumentOK, error)
 
-	TransformPipe(params *TransformPipeParams) (*TransformPipeOK, error)
+	TransformPipe(params *TransformPipeParams, opts ...ClientOption) (*TransformPipeOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  ListServices list services API
+ListServices list services API
 */
-func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, error) {
+func (a *Client) ListServices(params *ListServicesParams, opts ...ClientOption) (*ListServicesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListServicesParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "ListServices",
 		Method:             "GET",
 		PathPattern:        "/v1/service/list",
@@ -58,7 +60,12 @@ func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, erro
 		Reader:             &ListServicesReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
@@ -73,15 +80,14 @@ func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, erro
 }
 
 /*
-  Options options API
+Options options API
 */
-func (a *Client) Options(params *OptionsParams) (*OptionsOK, error) {
+func (a *Client) Options(params *OptionsParams, opts ...ClientOption) (*OptionsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewOptionsParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "Options",
 		Method:             "GET",
 		PathPattern:        "/v1/service/options",
@@ -92,7 +98,12 @@ func (a *Client) Options(params *OptionsParams) (*OptionsOK, error) {
 		Reader:             &OptionsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
@@ -107,15 +118,14 @@ func (a *Client) Options(params *OptionsParams) (*OptionsOK, error) {
 }
 
 /*
-  TransformDocument requests to transform a plain text document
+TransformDocument requests to transform a plain text document
 */
-func (a *Client) TransformDocument(params *TransformDocumentParams) (*TransformDocumentOK, error) {
+func (a *Client) TransformDocument(params *TransformDocumentParams, opts ...ClientOption) (*TransformDocumentOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewTransformDocumentParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "TransformDocument",
 		Method:             "POST",
 		PathPattern:        "/v1/document/transform",
@@ -126,7 +136,12 @@ func (a *Client) TransformDocument(params *TransformDocumentParams) (*TransformD
 		Reader:             &TransformDocumentReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
@@ -141,15 +156,14 @@ func (a *Client) TransformDocument(params *TransformDocumentParams) (*TransformD
 }
 
 /*
-  TransformPipe transform pipe API
+TransformPipe transform pipe API
 */
-func (a *Client) TransformPipe(params *TransformPipeParams) (*TransformPipeOK, error) {
+func (a *Client) TransformPipe(params *TransformPipeParams, opts ...ClientOption) (*TransformPipeOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewTransformPipeParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "TransformPipe",
 		Method:             "POST",
 		PathPattern:        "/v1/document/transform-pipe",
@@ -160,7 +174,12 @@ func (a *Client) TransformPipe(params *TransformPipeParams) (*TransformPipeOK, e
 		Reader:             &TransformPipeReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}

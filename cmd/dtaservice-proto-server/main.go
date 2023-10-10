@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
+
 	"github.com/theovassiliou/doctrans/gen/rest_api"
 	"github.com/theovassiliou/doctrans/gen/rest_api/operations"
 )

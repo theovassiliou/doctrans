@@ -16,7 +16,8 @@ import (
 // OptionsOKCode is the HTTP code returned for type OptionsOK
 const OptionsOKCode int = 200
 
-/*OptionsOK A successful response.
+/*
+OptionsOK A successful response.
 
 swagger:response optionsOK
 */

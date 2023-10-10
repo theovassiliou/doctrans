@@ -16,7 +16,8 @@ import (
 // TransformPipeOKCode is the HTTP code returned for type TransformPipeOK
 const TransformPipeOKCode int = 200
 
-/*TransformPipeOK A successful response.
+/*
+TransformPipeOK A successful response.
 
 swagger:response transformPipeOK
 */

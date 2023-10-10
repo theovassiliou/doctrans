@@ -6,14 +6,16 @@ package rest_models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DtaserviceTransformPipeRequest dtaservice transform pipe request
+//
 // swagger:model dtaserviceTransformPipeRequest
 type DtaserviceTransformPipeRequest struct {
 
@@ -43,7 +45,6 @@ func (m *DtaserviceTransformPipeRequest) Validate(formats strfmt.Registry) error
 }
 
 func (m *DtaserviceTransformPipeRequest) validatePipeService(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.PipeService) { // not required
 		return nil
 	}
@@ -57,6 +58,47 @@ func (m *DtaserviceTransformPipeRequest) validatePipeService(formats strfmt.Regi
 			if err := m.PipeService[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("pipeService" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("pipeService" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dtaservice transform pipe request based on the context it is used
+func (m *DtaserviceTransformPipeRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePipeService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DtaserviceTransformPipeRequest) contextValidatePipeService(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PipeService); i++ {
+
+		if m.PipeService[i] != nil {
+
+			if swag.IsZero(m.PipeService[i]) { // not required
+				return nil
+			}
+
+			if err := m.PipeService[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("pipeService" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("pipeService" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

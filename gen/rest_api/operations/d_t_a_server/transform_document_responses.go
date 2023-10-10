@@ -16,7 +16,8 @@ import (
 // TransformDocumentOKCode is the HTTP code returned for type TransformDocumentOK
 const TransformDocumentOKCode int = 200
 
-/*TransformDocumentOK A successful response.
+/*
+TransformDocumentOK A successful response.
 
 swagger:response transformDocumentOK
 */

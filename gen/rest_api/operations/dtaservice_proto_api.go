@@ -34,12 +34,16 @@ func NewDtaserviceProtoAPI(spec *loads.Document) *DtaserviceProtoAPI {
 		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		DtaServerListServicesHandler: d_t_a_server.ListServicesHandlerFunc(func(params d_t_a_server.ListServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation d_t_a_server.ListServices has not yet been implemented")
 		}),
@@ -66,19 +70,24 @@ type DtaserviceProtoAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
@@ -91,6 +100,7 @@ type DtaserviceProtoAPI struct {
 	DtaServerTransformDocumentHandler d_t_a_server.TransformDocumentHandler
 	// DtaServerTransformPipeHandler sets the operation handler for the transform pipe operation
 	DtaServerTransformPipeHandler d_t_a_server.TransformPipeHandler
+
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -108,6 +118,16 @@ type DtaserviceProtoAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *DtaserviceProtoAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *DtaserviceProtoAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -158,19 +178,16 @@ func (o *DtaserviceProtoAPI) Validate() error {
 	}
 
 	if o.DtaServerListServicesHandler == nil {
-		unregistered = append(unregistered, "DtaServer.ListServicesHandler")
+		unregistered = append(unregistered, "d_t_a_server.ListServicesHandler")
 	}
-
 	if o.DtaServerOptionsHandler == nil {
-		unregistered = append(unregistered, "DtaServer.OptionsHandler")
+		unregistered = append(unregistered, "d_t_a_server.OptionsHandler")
 	}
-
 	if o.DtaServerTransformDocumentHandler == nil {
-		unregistered = append(unregistered, "DtaServer.TransformDocumentHandler")
+		unregistered = append(unregistered, "d_t_a_server.TransformDocumentHandler")
 	}
-
 	if o.DtaServerTransformPipeHandler == nil {
-		unregistered = append(unregistered, "DtaServer.TransformPipeHandler")
+		unregistered = append(unregistered, "d_t_a_server.TransformPipeHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -187,16 +204,12 @@ func (o *DtaserviceProtoAPI) ServeErrorFor(operationID string) func(http.Respons
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *DtaserviceProtoAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *DtaserviceProtoAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -260,7 +273,6 @@ func (o *DtaserviceProtoAPI) Context() *middleware.Context {
 
 func (o *DtaserviceProtoAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -269,22 +281,18 @@ func (o *DtaserviceProtoAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/service/list"] = d_t_a_server.NewListServices(o.context, o.DtaServerListServicesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/service/options"] = d_t_a_server.NewOptions(o.context, o.DtaServerOptionsHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/document/transform"] = d_t_a_server.NewTransformDocument(o.context, o.DtaServerTransformDocumentHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/document/transform-pipe"] = d_t_a_server.NewTransformPipe(o.context, o.DtaServerTransformPipeHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -294,6 +302,9 @@ func (o *DtaserviceProtoAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -313,4 +324,16 @@ func (o *DtaserviceProtoAPI) RegisterConsumer(mediaType string, consumer runtime
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *DtaserviceProtoAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *DtaserviceProtoAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[um][path] = builder(h)
+	}
 }

@@ -6,11 +6,14 @@ package rest_models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DtaserviceTransformDocumentResponse The response message containing the transformed message
+//
 // swagger:model dtaserviceTransformDocumentResponse
 type DtaserviceTransformDocumentResponse struct {
 
@@ -27,6 +30,11 @@ type DtaserviceTransformDocumentResponse struct {
 
 // Validate validates this dtaservice transform document response
 func (m *DtaserviceTransformDocumentResponse) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this dtaservice transform document response based on context it is used
+func (m *DtaserviceTransformDocumentResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

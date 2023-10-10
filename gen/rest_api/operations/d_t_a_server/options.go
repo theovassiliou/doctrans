@@ -8,7 +8,7 @@ package d_t_a_server
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // OptionsHandlerFunc turns a function with the right signature into a options handler
@@ -29,10 +29,10 @@ func NewOptions(ctx *middleware.Context, handler OptionsHandler) *Options {
 	return &Options{Context: ctx, Handler: handler}
 }
 
-/*Options swagger:route GET /v1/service/options DTAServer options
+/*
+	Options swagger:route GET /v1/service/options DTAServer options
 
 Options options API
-
 */
 type Options struct {
 	Context *middleware.Context
@@ -42,17 +42,15 @@ type Options struct {
 func (o *Options) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewOptionsParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

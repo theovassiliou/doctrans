@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
@@ -30,9 +29,8 @@ func (o *ListServicesReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return result, nil
-
 	default:
-		return nil, runtime.NewAPIError("unknown error", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /v1/service/list] ListServices", response, response.Code())
 	}
 }
 
@@ -41,7 +39,8 @@ func NewListServicesOK() *ListServicesOK {
 	return &ListServicesOK{}
 }
 
-/*ListServicesOK handles this case with default header values.
+/*
+ListServicesOK describes a response with status code 200, with default header values.
 
 A successful response.
 */
@@ -49,7 +48,41 @@ type ListServicesOK struct {
 	Payload *rest_models.DtaserviceListServicesResponse
 }
 
+// IsSuccess returns true when this list services o k response has a 2xx status code
+func (o *ListServicesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this list services o k response has a 3xx status code
+func (o *ListServicesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this list services o k response has a 4xx status code
+func (o *ListServicesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this list services o k response has a 5xx status code
+func (o *ListServicesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this list services o k response a status code equal to that given
+func (o *ListServicesOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the list services o k response
+func (o *ListServicesOK) Code() int {
+	return 200
+}
+
 func (o *ListServicesOK) Error() string {
+	return fmt.Sprintf("[GET /v1/service/list][%d] listServicesOK  %+v", 200, o.Payload)
+}
+
+func (o *ListServicesOK) String() string {
 	return fmt.Sprintf("[GET /v1/service/list][%d] listServicesOK  %+v", 200, o.Payload)
 }
 

@@ -2,17 +2,17 @@
 
 // Package rest_api dtaservice.proto
 //
-//  Schemes:
-//    http
-//  Host: localhost
-//  BasePath: /
-//  Version: version not set
+//	Schemes:
+//	  http
+//	Host: localhost
+//	BasePath: /
+//	Version: version not set
 //
-//  Consumes:
-//    - application/json
+//	Consumes:
+//	  - application/json
 //
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // swagger:meta
 package rest_api

@@ -13,62 +13,77 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
-// NewTransformDocumentParams creates a new TransformDocumentParams object
-// with the default values initialized.
+// NewTransformDocumentParams creates a new TransformDocumentParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewTransformDocumentParams() *TransformDocumentParams {
-	var ()
 	return &TransformDocumentParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewTransformDocumentParamsWithTimeout creates a new TransformDocumentParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewTransformDocumentParamsWithTimeout(timeout time.Duration) *TransformDocumentParams {
-	var ()
 	return &TransformDocumentParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewTransformDocumentParamsWithContext creates a new TransformDocumentParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewTransformDocumentParamsWithContext(ctx context.Context) *TransformDocumentParams {
-	var ()
 	return &TransformDocumentParams{
-
 		Context: ctx,
 	}
 }
 
 // NewTransformDocumentParamsWithHTTPClient creates a new TransformDocumentParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewTransformDocumentParamsWithHTTPClient(client *http.Client) *TransformDocumentParams {
-	var ()
 	return &TransformDocumentParams{
 		HTTPClient: client,
 	}
 }
 
-/*TransformDocumentParams contains all the parameters to send to the API endpoint
-for the transform document operation typically these are written to a http.Request
+/*
+TransformDocumentParams contains all the parameters to send to the API endpoint
+
+	for the transform document operation.
+
+	Typically these are written to a http.Request.
 */
 type TransformDocumentParams struct {
 
-	/*Body*/
+	// Body.
 	Body *rest_models.DtaserviceDocumentRequest
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the transform document params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *TransformDocumentParams) WithDefaults() *TransformDocumentParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the transform document params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *TransformDocumentParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the transform document params
@@ -122,7 +137,6 @@ func (o *TransformDocumentParams) WriteToRequest(r runtime.ClientRequest, reg st
 		return err
 	}
 	var res []error
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

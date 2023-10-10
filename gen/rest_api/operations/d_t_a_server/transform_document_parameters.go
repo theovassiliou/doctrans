@@ -12,12 +12,14 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/validate"
 
 	"github.com/theovassiliou/doctrans/gen/rest_models"
 )
 
 // NewTransformDocumentParams creates a new TransformDocumentParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewTransformDocumentParams() TransformDocumentParams {
 
 	return TransformDocumentParams{}
@@ -53,7 +55,7 @@ func (o *TransformDocumentParams) BindRequest(r *http.Request, route *middleware
 		var body rest_models.DtaserviceDocumentRequest
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
+				res = append(res, errors.Required("body", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("body", "body", "", err))
 			}
@@ -63,12 +65,17 @@ func (o *TransformDocumentParams) BindRequest(r *http.Request, route *middleware
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(r.Context())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Body = &body
 			}
 		}
 	} else {
-		res = append(res, errors.Required("body", "body"))
+		res = append(res, errors.Required("body", "body", ""))
 	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

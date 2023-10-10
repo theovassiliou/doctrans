@@ -16,7 +16,8 @@ import (
 // ListServicesOKCode is the HTTP code returned for type ListServicesOK
 const ListServicesOKCode int = 200
 
-/*ListServicesOK A successful response.
+/*
+ListServicesOK A successful response.
 
 swagger:response listServicesOK
 */

@@ -13,7 +13,8 @@ import (
 )
 
 // NewOptionsParams creates a new OptionsParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewOptionsParams() OptionsParams {
 
 	return OptionsParams{}
